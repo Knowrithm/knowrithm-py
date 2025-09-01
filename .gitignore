@@ -4,3 +4,4 @@
 */__pycaches__/*
 venv/
 test/
+*.pyc
