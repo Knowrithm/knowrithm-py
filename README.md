@@ -27,7 +27,7 @@ pip install knowrithm-py
 ### From Source
 
 ```bash
-git clone https://github.com/yourusername/knowrithm-py.git
+git clone https://github.com/Knowrithm/knowrithm-py.git
 cd knowrithm-py
 pip install -e .
 ```
@@ -38,11 +38,10 @@ pip install -e .
 
 ```python
 from knowrithm.client import KnowrithmClient
-from config.config import Config
 
 # Initialize the client
-config = Config(api_key="your_api_key_here")
-client = KnowrithmClient(config)
+client = KnowrithmClient()
+client.auth.login("your-email", "your-password")
 ```
 
 ### 2. Create an AI Agent
@@ -114,10 +113,10 @@ from knowrithm.agent import Agent
 from models.agent import AgentModel
 
 # List all agents
-agents = client.list_agents()
+agents = client.agents.list()
 
 # Get specific agent
-agent = client.get_agent("agent_id")
+agent = client.agents.get_agent("agent_id")
 
 # Update agent settings
 agent.update(

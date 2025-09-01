@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "knowrithm-py"
-version = "0.1.1"
+version = "0.1.2"
 authors = [
     {name = "Steven Saad", email = "stevensaad35@gmail.com"},
 ]
@@ -19,3 +19,6 @@ dependencies = [
 [tool.setuptools.packages.find]
 where = ["src"]
 include = ["knowrithm_py*"]
+
+[project.urls]
+Homepage = "https://github.com/Knowrithm/knowrithm-py.git"
