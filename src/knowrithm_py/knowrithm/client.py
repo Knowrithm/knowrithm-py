@@ -87,8 +87,7 @@ class KnowrithmClient:
         authenticated: bool = True
     ) -> Dict:
         """Make HTTP request with error handling and retries"""
-        url = f"{self.base_url}/api/v1{endpoint}"
-        
+        url = f"{self.base_url}{endpoint}"
         request_headers = {}
         if headers:
             request_headers.update(headers)
