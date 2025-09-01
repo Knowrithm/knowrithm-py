@@ -13,7 +13,7 @@ class AnalyticsService:
     def get_dashboard(self, company_id: Optional[str] = None) -> Dict:
         """Get comprehensive dashboard data"""
         params = {"company_id": company_id} if company_id else {}
-        return self.client._make_request("GET", "/analytics/dashboard", params=params)
+        return self.client._make_request("GET", "/analytic/dashboard", params=params)
     
     def get_agent_metrics(self, agent_id: str, start_date: Optional[str] = None, 
                          end_date: Optional[str] = None) -> Dict:

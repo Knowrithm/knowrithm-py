@@ -21,7 +21,7 @@ class ConversationService:
         }
         if entity_id:
             data["entity_id"] = entity_id
-        return self.client._make_request("POST", "/conversations", data)
+        return self.client._make_request("POST", "/conversation", data)
     
     def list(self, agent_id: Optional[str] = None, status: Optional[ConversationStatus] = None,
              limit: int = 50, offset: int = 0) -> List[Dict]:
@@ -31,34 +31,34 @@ class ConversationService:
             params["agent_id"] = agent_id
         if status:
             params["status"] = status.value
-        return self.client._make_request("GET", "/conversations", params=params)
+        return self.client._make_request("GET", "/conversation", params=params)
     
     def get(self, conversation_id: str) -> Dict:
         """Get conversation details"""
-        return self.client._make_request("GET", f"/conversations/{conversation_id}")
+        return self.client._make_request("GET", f"/conversation/{conversation_id}")
     
     def update(self, conversation_id: str, conversation_data: Dict) -> Dict:
         """Update conversation metadata"""
-        return self.client._make_request("PUT", f"/conversations/{conversation_id}", conversation_data)
+        return self.client._make_request("PUT", f"/conversation/{conversation_id}", conversation_data)
     
     def delete(self, conversation_id: str) -> Dict:
         """Soft delete conversation"""
-        return self.client._make_request("DELETE", f"/conversations/{conversation_id}")
+        return self.client._make_request("DELETE", f"/conversation/{conversation_id}")
     
     def restore(self, conversation_id: str) -> Dict:
         """Restore soft-deleted conversation"""
-        return self.client._make_request("PATCH", f"/conversations/{conversation_id}/restore")
+        return self.client._make_request("PATCH", f"/conversation/{conversation_id}/restore")
     
     def archive(self, conversation_id: str) -> Dict:
         """Archive conversation"""
-        return self.client._make_request("PATCH", f"/conversations/{conversation_id}/archive")
+        return self.client._make_request("PATCH", f"/conversation/{conversation_id}/archive")
     
     def end_conversation(self, conversation_id: str, satisfaction_rating: Optional[int] = None) -> Dict:
         """End a conversation"""
         data = {}
         if satisfaction_rating:
             data["satisfaction_rating"] = satisfaction_rating
-        return self.client._make_request("POST", f"/conversations/{conversation_id}/end", data)
+        return self.client._make_request("POST", f"/conversation/{conversation_id}/end", data)
 
 
 class MessageService:
@@ -74,12 +74,12 @@ class MessageService:
             "role": role,
             **kwargs
         }
-        return self.client._make_request("POST", f"/conversations/{conversation_id}/messages", data)
+        return self.client._make_request("POST", f"/conversation/{conversation_id}/messages", data)
     
     def list_messages(self, conversation_id: str, limit: int = 50, offset: int = 0) -> List[Dict]:
         """Get conversation messages with pagination"""
         params = {"limit": limit, "offset": offset}
-        return self.client._make_request("GET", f"/conversations/{conversation_id}/messages", params=params)
+        return self.client._make_request("GET", f"/conversation/{conversation_id}/messages", params=params)
     
     def get_message(self, message_id: str) -> Dict:
         """Get message details"""
