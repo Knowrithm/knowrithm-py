@@ -4,5 +4,5 @@ import os
 
 
 class Config:
-    BASE_URL = os.get_env("BASE_URL")
+    KNOWRITHM_BASE_URL = os.get_env("KNOWRITHM_BASE_URL")
     

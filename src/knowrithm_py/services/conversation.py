@@ -1,8 +1,8 @@
 
 from typing import Dict, List, Optional
 
-from client import KnowrithmClient
-from models.conversation import ConversationStatus, EntityType
+from knowrithm_py.knowrithm.client import KnowrithmClient
+from knowrithm_py.models.conversation import ConversationStatus, EntityType
 
 
 class ConversationService:

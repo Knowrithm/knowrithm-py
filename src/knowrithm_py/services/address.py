@@ -1,7 +1,7 @@
 
 from typing import Dict, List, Optional
 
-from client import KnowrithmClient
+from knowrithm_py.knowrithm.client import KnowrithmClient
 
 
 class AddressService:

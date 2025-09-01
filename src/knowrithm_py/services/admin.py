@@ -2,8 +2,8 @@
 
 from typing import Any, Dict, List, Optional
 
-from knowrithm.client import KnowrithmClient
-from models.user import UserRole, UserStatus
+from knowrithm_py.knowrithm.client import KnowrithmClient
+from knowrithm_py.models.user import UserRole, UserStatus
 
 
 class AdminService:

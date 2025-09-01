@@ -1,7 +1,7 @@
 
 from typing import Dict, Optional
 
-from knowrithm.client import KnowrithmClient
+from knowrithm_py.knowrithm.client import KnowrithmClient
 
 
 class AnalyticsService:

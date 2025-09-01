@@ -7,7 +7,8 @@
 # Convenience classes for common workflows
 from typing import Dict, List, Optional
 
-from knowrithm.client import KnowrithmClient
+from knowrithm_py.knowrithm.client import KnowrithmClient
+from knowrithm_py.models.conversation import EntityType
 
 
 class KnowrithmAgent:

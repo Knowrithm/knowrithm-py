@@ -2,8 +2,8 @@
 from datetime import datetime
 from typing import Dict, List
 
-from knowrithm.client import KnowrithmClient
-from dataclass.response import AuthResponse
+from knowrithm_py.dataclass.response import AuthResponse
+from knowrithm_py.knowrithm.client import KnowrithmClient
 
 
 class AuthService:

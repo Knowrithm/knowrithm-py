@@ -1,8 +1,9 @@
 
 from typing import Dict, List, Optional
 
-from knowrithm.client import KnowrithmClient
-from models.document import DocumentStatus
+from knowrithm_py.knowrithm.client import KnowrithmClient
+from knowrithm_py.models.document import DocumentStatus
+
 
 
 class DocumentService:

@@ -1,8 +1,8 @@
 
 from typing import Dict, List, Optional
 
-from knowrithm.client import KnowrithmClient
-from models.agent import AgentStatus
+from knowrithm_py.knowrithm.client import KnowrithmClient
+from knowrithm_py.models.agent import AgentStatus
 
 
 class AgentService:

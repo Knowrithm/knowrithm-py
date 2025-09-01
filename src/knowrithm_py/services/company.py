@@ -2,7 +2,7 @@
 
 from typing import Dict, List
 
-from knowrithm.client import KnowrithmClient
+from knowrithm_py.knowrithm.client import KnowrithmClient
 
 
 class CompanyService:

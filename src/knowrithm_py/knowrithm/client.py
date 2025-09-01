@@ -5,9 +5,9 @@
 import time
 import requests
 from typing import Dict, Optional
-from config.config import Config
-from dataclass.config import KnowrithmConfig
-from dataclass.error import KnowrithmAPIError
+from knowrithm_py.config.config import Config
+from knowrithm_py.dataclass.config import KnowrithmConfig
+from knowrithm_py.dataclass.error import KnowrithmAPIError
 
 
 class KnowrithmClient:
@@ -32,23 +32,23 @@ class KnowrithmClient:
     """
     
     def __init__(self, config: Optional[KnowrithmConfig] = None):
-        self.config = config or KnowrithmConfig(base_url=Config.BASE_URL)
+        self.config = config or KnowrithmConfig(base_url=Config.KNOWRITHM_BASE_URL)
         self._access_token: Optional[str] = None
         self._refresh_token: Optional[str] = None
         self._session = requests.Session()
         
         
         
-        from services.address import AddressService
-        from services.admin import AdminService
-        from services.agent import AgentService
-        from services.auth import AuthService, SessionService, UserService
-        from services.company import CompanyService
-        from services.conversation import ConversationService, MessageService
-        from services.dashboard import AnalyticsService
-        from services.database import DatabaseService
-        from services.document import DocumentService
-        from services.lead import LeadService
+        from knowrithm_py.services.address import AddressService
+        from knowrithm_py.services.admin import AdminService
+        from knowrithm_py.services.agent import AgentService
+        from knowrithm_py.services.auth import AuthService, SessionService, UserService
+        from knowrithm_py.services.company import CompanyService
+        from knowrithm_py.services.conversation import ConversationService, MessageService
+        from knowrithm_py.services.dashboard import AnalyticsService
+        from knowrithm_py.services.database import DatabaseService
+        from knowrithm_py.services.document import DocumentService
+        from knowrithm_py.services.lead import LeadService
         
         
         # Initialize service modules
