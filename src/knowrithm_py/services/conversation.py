@@ -74,7 +74,7 @@ class MessageService:
             "role": role,
             **kwargs
         }
-        return self.client._make_request("POST", f"/conversation/{conversation_id}/messages", data)
+        return self.client._make_request("POST", f"/conversation/{conversation_id}/chat", data)
     
     def list_messages(self, conversation_id: str, limit: int = 50, offset: int = 0) -> List[Dict]:
         """Get conversation messages with pagination"""
@@ -83,15 +83,15 @@ class MessageService:
     
     def get_message(self, message_id: str) -> Dict:
         """Get message details"""
-        return self.client._make_request("GET", f"/messages/{message_id}")
+        return self.client._make_request("GET", f"/message/{message_id}")
     
     def delete_message(self, message_id: str) -> Dict:
         """Soft delete message"""
-        return self.client._make_request("DELETE", f"/messages/{message_id}")
+        return self.client._make_request("DELETE", f"/message/{message_id}")
     
     def restore_message(self, message_id: str) -> Dict:
         """Restore soft-deleted message"""
-        return self.client._make_request("PATCH", f"/messages/{message_id}/restore")
+        return self.client._make_request("PATCH", f"/message/{message_id}/restore")
     
     def rate_message(self, message_id: str, rating: int, feedback: Optional[str] = None) -> Dict:
         """Rate a message (1-5 stars)"""
