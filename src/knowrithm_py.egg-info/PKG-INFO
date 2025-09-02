@@ -252,16 +252,6 @@ logs = dashboard.export_conversations("agent_id", date_range="last_30_days")
 
 ## ⚙️ Configuration
 
-### Environment Variables
-
-Create a `.env` file in your project root:
-
-```env
-KNOWRITHM_API_KEY=your_api_key_here
-KNOWRITHM_BASE_URL=https://app.knowrithm.org
-KNOWRITHM_TIMEOUT=30
-```
-
 ### Configuration File
 
 ```python
@@ -389,7 +379,7 @@ pip install -e .
 - **`DocumentService`**: Document upload and processing
 - **`DashboardService`**: Analytics and monitoring
 
-For detailed API documentation, visit: [https://docs.knowrithm.com](https://docs.knowrithm.com)
+For detailed API documentation, visit: [https://docs.knowrithm.org](https://docs.knowrithm.org)
 
 ## 🤝 Contributing
 
@@ -407,10 +397,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🆘 Support
 
-- **Documentation**: [https://docs.knowrithm.com](https://docs.knowrithm.com)
+- **Documentation**: [https://docs.knowrithm.org](https://docs.knowrithm.org)
 - **Discord Community**: [https://discord.gg/knowrithm](https://discord.gg/knowrithm)
-- **Email Support**: support@knowrithm.com
-- **GitHub Issues**: [https://github.com/yourusername/knowrithm-py/issues](https://github.com/yourusername/knowrithm-py/issues)
+- **Email Support**: support@knowrithm.org
+- **GitHub Issues**: [https://github.com/Knowrithm/knowrithm-py.git/issues](https://github.com/Knowrithm/knowrithm-py.git/issues)
 
 ## 🏆 Examples in the Wild
 
