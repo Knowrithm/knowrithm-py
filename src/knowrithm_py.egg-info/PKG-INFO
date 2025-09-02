@@ -242,10 +242,10 @@ logs = dashboard.export_conversations("agent_id", date_range="last_30_days")
     data-agent-id="{agent_id}"
     data-company-id="{company_id}"
     data-api-url="{base_url}/api"
-    data-color="{['color']}"
-    data-position="{['position']}"
-    data-welcome="{['welcome']}"
-    data-title="{['title']}"
+    data-color="{color}"
+    data-position="{position}"
+    data-welcome="{welcome}"
+    data-title="{title}"
     async>
 </script>
 ```

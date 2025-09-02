@@ -11,6 +11,7 @@ from knowrithm_py.knowrithm.client import KnowrithmClient
 from knowrithm_py.models.conversation import EntityType
 
 
+# Updated high-level interfaces
 class KnowrithmAgent:
     """High-level interface for agent operations"""
     
@@ -19,7 +20,7 @@ class KnowrithmAgent:
         self.agent_id = agent_id
         self._details = None
     
-    def chat(self, message: str, conversation_id: Optional[str] = None, 
+    def chat(self, message: str, conversation_id: Optional[str] = None,
              entity_type: EntityType = EntityType.USER, entity_id: Optional[str] = None) -> Dict:
         """Send a message to this agent"""
         if not conversation_id:
@@ -52,16 +53,16 @@ class KnowrithmAgent:
     def get_conversations(self, limit: int = 50, offset: int = 0) -> List[Dict]:
         """Get agent conversations"""
         return self.client.conversations.list(
-            agent_id=self.agent_id, 
-            limit=limit, 
+            agent_id=self.agent_id,
+            limit=limit,
             offset=offset
         )
     
     def get_metrics(self, start_date: Optional[str] = None, end_date: Optional[str] = None) -> Dict:
         """Get agent performance metrics"""
         return self.client.analytics.get_agent_metrics(
-            self.agent_id, 
-            start_date=start_date, 
+            self.agent_id,
+            start_date=start_date,
             end_date=end_date
         )
 

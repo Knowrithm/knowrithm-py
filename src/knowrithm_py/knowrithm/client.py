@@ -9,14 +9,17 @@ from knowrithm_py.config.config import Config
 from knowrithm_py.dataclass.config import KnowrithmConfig
 from knowrithm_py.dataclass.error import KnowrithmAPIError
 
-
 class KnowrithmClient:
     """
-    Main client for interacting with the Knowrithm API
+    Main client for interacting with the Knowrithm API using API Key authentication
     
     Example usage:
-        client = KnowrithmClient("https://app.knowrithm.org")
-        auth_response = client.auth.login("user@example.com", "password")
+        # Initialize with API credentials
+        client = KnowrithmClient(
+            api_key="your_api_key_here",
+            api_secret="your_api_secret_here",
+            base_url="https://app.knowrithm.org"
+        )
         
         # Create a company
         company = client.companies.create({
@@ -31,14 +34,24 @@ class KnowrithmClient:
         })
     """
     
-    def __init__(self, config: Optional[KnowrithmConfig] = None):
+    def __init__(self, api_key: str, api_secret: str, config: Optional[KnowrithmConfig] = None):
+        """
+        Initialize the client with API key and secret
+        
+        Args:
+            api_key: Your API key
+            api_secret: Your API secret
+            config: Optional configuration object
+        """
+        self.api_key = api_key
+        self.api_secret = api_secret
         self.config = config or KnowrithmConfig(base_url=Config.KNOWRITHM_BASE_URL)
-        self._access_token: Optional[str] = None
-        self._refresh_token: Optional[str] = None
         self._session = requests.Session()
         
+        # Set up authentication headers
+        self._setup_authentication()
         
-        
+        # Initialize service modules
         from knowrithm_py.services.address import AddressService
         from knowrithm_py.services.admin import AdminService
         from knowrithm_py.services.agent import AgentService
@@ -50,8 +63,6 @@ class KnowrithmClient:
         from knowrithm_py.services.document import DocumentService
         from knowrithm_py.services.lead import LeadService
         
-        
-        # Initialize service modules
         self.auth = AuthService(self)
         self.users = UserService(self)
         self.companies = CompanyService(self)
@@ -66,15 +77,17 @@ class KnowrithmClient:
         self.sessions = SessionService(self)
         self.admin = AdminService(self)
     
+    def _setup_authentication(self):
+        """Set up API key authentication headers"""
+        self._session.headers.update({
+            "X-API-Key": self.api_key,
+            "X-API-Secret": self.api_secret,
+            "Content-Type": "application/json"
+        })
+    
     @property
     def base_url(self) -> str:
         return f"{self.config.base_url}/{self.config.api_version}"
-    
-    def set_access_token(self, token: str, refresh_token: Optional[str] = None):
-        """Set the access token for authenticated requests"""
-        self._access_token = token
-        self._refresh_token = refresh_token
-        self._session.headers.update({"Authorization": f"Bearer {token}"})
     
     def _make_request(
         self, 
@@ -83,8 +96,7 @@ class KnowrithmClient:
         data: Optional[Dict] = None,
         params: Optional[Dict] = None,
         files: Optional[Dict] = None,
-        headers: Optional[Dict] = None,
-        authenticated: bool = True
+        headers: Optional[Dict] = None
     ) -> Dict:
         """Make HTTP request with error handling and retries"""
         url = f"{self.base_url}{endpoint}"
@@ -109,12 +121,6 @@ class KnowrithmClient:
                     timeout=self.config.timeout,
                     verify=self.config.verify_ssl
                 )
-                
-                if response.status_code == 401 and authenticated and self._refresh_token:
-                    # Try to refresh token
-                    if self._refresh_auth_token():
-                        # Retry the request with new token
-                        continue
                 
                 if response.status_code >= 400:
                     error_data = {}
@@ -142,30 +148,3 @@ class KnowrithmClient:
                 time.sleep(self.config.retry_backoff_factor ** attempt)
         
         raise KnowrithmAPIError("Max retries exceeded")
-    
-    def _refresh_auth_token(self) -> bool:
-        """Attempt to refresh the authentication token"""
-        if not self._refresh_token:
-            return False
-        
-        try:
-            response = self._session.post(
-                f"{self.base_url}/auth/refresh",
-                json={"refresh_token": self._refresh_token},
-                timeout=self.config.timeout
-            )
-            
-            if response.status_code == 200:
-                auth_data = response.json()
-                self.set_access_token(
-                    auth_data["access_token"],
-                    auth_data.get("refresh_token", self._refresh_token)
-                )
-                return True
-                
-        except Exception:
-            pass
-            
-        return False
-
-

@@ -17,6 +17,7 @@ src/knowrithm_py/knowrithm/__init__.py
 src/knowrithm_py/knowrithm/agent.py
 src/knowrithm_py/knowrithm/client.py
 src/knowrithm_py/knowrithm/company.py
+src/knowrithm_py/knowrithm/conversation.py
 src/knowrithm_py/models/__init__.py
 src/knowrithm_py/models/agent.py
 src/knowrithm_py/models/conversation.py

@@ -1,90 +1,48 @@
 
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from knowrithm_py.dataclass.response import AuthResponse
 from knowrithm_py.knowrithm.client import KnowrithmClient
 
 
+# Updated AuthService for API key management
 class AuthService:
-    """Authentication and user management service"""
+    """API Key and authentication service"""
     
     def __init__(self, client: KnowrithmClient):
         self.client = client
     
-    def register(self, email: str, password: str, first_name: str, last_name: str, 
-                username: str, **kwargs) -> Dict:
-        """Register a new user"""
-        data = {
-            "email": email,
-            "password": password,
-            "first_name": first_name,
-            "last_name": last_name,
-            "username": username,
-            **kwargs
-        }
-        return self.client._make_request("POST", "/auth/register", data, authenticated=False)
+    def validate_credentials(self) -> Dict:
+        """Validate current API key and secret"""
+        return self.client._make_request("GET", "/auth/validate")
     
-    def login(self, email: str, password: str, remember_me: bool = False) -> AuthResponse:
-        """Login and set access token"""
-        data = {"email": email, "password": password, "remember_me": remember_me}
-        response = self.client._make_request("POST", "/auth/login", data, authenticated=False)
-        
-        auth_response = AuthResponse(
-            access_token=response["access_token"],
-            refresh_token=response.get("refresh_token"),
-            user_id=response.get("user_id"),
-            role=response.get("role"),
-            session_expires_at=datetime.fromisoformat(response["expires_at"]) if response.get("expires_at") else None
-        )
-        
-        self.client.set_access_token(auth_response.access_token, auth_response.refresh_token)
-        return auth_response
+    def get_api_key_info(self) -> Dict:
+        """Get information about the current API key"""
+        return self.client._make_request("GET", "/auth/api-key/info")
     
-    def logout(self) -> Dict:
-        """Logout current user"""
-        return self.client._make_request("POST", "/auth/logout")
+    def refresh_api_key(self) -> Dict:
+        """Refresh/rotate API key (if supported)"""
+        return self.client._make_request("POST", "/auth/api-key/refresh")
     
-    def refresh_token(self, refresh_token: str) -> AuthResponse:
-        """Refresh authentication token"""
-        data = {"refresh_token": refresh_token}
-        response = self.client._make_request("POST", "/auth/refresh", data, authenticated=False)
-        
-        auth_response = AuthResponse(
-            access_token=response["access_token"],
-            refresh_token=response.get("refresh_token"),
-            user_id=response.get("user_id"),
-            role=response.get("role")
-        )
-        
-        self.client.set_access_token(auth_response.access_token, auth_response.refresh_token)
-        return auth_response
+    def revoke_api_key(self) -> Dict:
+        """Revoke current API key"""
+        return self.client._make_request("POST", "/auth/api-key/revoke")
     
-    def verify_email(self, token: str) -> Dict:
-        """Verify email address with token"""
-        data = {"token": token}
-        return self.client._make_request("POST", "/auth/verify-email", data, authenticated=False)
+    def list_api_keys(self) -> Dict:
+        """List all API keys for the account"""
+        return self.client._make_request("GET", "/auth/api-keys")
     
-    def resend_verification(self, email: str) -> Dict:
-        """Resend email verification"""
-        data = {"email": email}
-        return self.client._make_request("POST", "/auth/resend-verification", data, authenticated=False)
+    def create_api_key(self, name: str, permissions: Optional[Dict] = None) -> Dict:
+        """Create a new API key"""
+        data = {"name": name}
+        if permissions:
+            data["permissions"] = permissions
+        return self.client._make_request("POST", "/auth/api-keys", data)
     
-    def forgot_password(self, email: str) -> Dict:
-        """Request password reset"""
-        data = {"email": email}
-        return self.client._make_request("POST", "/auth/forgot-password", data, authenticated=False)
-    
-    def reset_password(self, token: str, new_password: str) -> Dict:
-        """Reset password with token"""
-        data = {"token": token, "new_password": new_password}
-        return self.client._make_request("POST", "/auth/reset-password", data, authenticated=False)
-    
-    def change_password(self, current_password: str, new_password: str) -> Dict:
-        """Change password for authenticated user"""
-        data = {"current_password": current_password, "new_password": new_password}
-        return self.client._make_request("POST", "/auth/change-password", data)
-
+    def delete_api_key(self, key_id: str) -> Dict:
+        """Delete an API key"""
+        return self.client._make_request("DELETE", f"/auth/api-keys/{key_id}")
 
 
 
