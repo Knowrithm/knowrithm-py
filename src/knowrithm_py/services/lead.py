@@ -25,7 +25,7 @@ class LeadService:
             params["company_id"] = company_id
         if status:
             params["status"] = status
-        return self.client._make_request("GET", "/lead", params=params)
+        return self.client._make_request("GET", "/lead/company", params=params)
     
     def get(self, lead_id: str) -> Dict:
         """Get lead details"""

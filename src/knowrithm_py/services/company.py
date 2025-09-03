@@ -20,9 +20,9 @@ class CompanyService:
         params = {"active_only": active_only}
         return self.client._make_request("GET", "/company", params=params)
     
-    def get(self, company_id: str) -> Dict:
+    def get(self) -> Dict:
         """Get company details"""
-        return self.client._make_request("GET", f"/company/{company_id}")
+        return self.client._make_request("GET", f"/company")
     
     def update(self, company_id: str, company_data: Dict) -> Dict:
         """Update company information"""
