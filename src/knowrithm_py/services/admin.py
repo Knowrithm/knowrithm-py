@@ -59,22 +59,22 @@ class AdminService:
             params["event_type"] = event_type
         if risk_level:
             params["risk_level"] = risk_level
-        return self.client._make_request("GET", "/admin/audit-log", params=params)
+        return self.client._make_request("GET", "/audit-log", params=params)
     
     def get_system_configuration(self) -> Dict:
         """Get system configuration"""
-        return self.client._make_request("GET", "/admin/config")
+        return self.client._make_request("GET", "/config")
     
     def update_system_configuration(self, config_key: str, config_value: Any) -> Dict:
         """Update system configuration"""
         data = {"config_key": config_key, "config_value": config_value}
-        return self.client._make_request("PATCH", "/admin/config", data)
+        return self.client._make_request("PATCH", "/config", data)
     
     def force_password_reset(self, user_id: str) -> Dict:
         """Force password reset for user"""
-        return self.client._make_request("POST", f"/admin/user/{user_id}/force-password-reset")
+        return self.client._make_request("POST", f"/user/{user_id}/force-password-reset")
     
     def impersonate_user(self, user_id: str) -> Dict:
         """Impersonate user (super admin only)"""
-        return self.client._make_request("POST", f"/admin/user/{user_id}/impersonate")
+        return self.client._make_request("POST", f"/user/{user_id}/impersonate")
 

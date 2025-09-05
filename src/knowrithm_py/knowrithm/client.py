@@ -121,6 +121,7 @@ class KnowrithmClient:
                     timeout=self.config.timeout,
                     verify=self.config.verify_ssl
                 )
+                print(response.text)
                 
                 if response.status_code >= 400:
                     error_data = {}
