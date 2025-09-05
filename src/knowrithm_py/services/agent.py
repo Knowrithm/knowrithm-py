@@ -2,7 +2,7 @@
 from typing import Dict, List, Optional
 
 from knowrithm_py.knowrithm.client import KnowrithmClient
-from knowrithm_py.models.agent import AgentStatus
+# from knowrithm_py.models.agent import AgentStatus
 
 
 class AgentService:
@@ -40,9 +40,9 @@ class AgentService:
         """Restore a soft-deleted agent"""
         return self.client._make_request("PATCH", f"/agent/{agent_id}/restore")
     
-    def update_status(self, agent_id: str, status: AgentStatus) -> Dict:
+    def update_status(self, agent_id: str, status) -> Dict:
         """Update agent status"""
-        return self.client._make_request("PATCH", f"/agent/{agent_id}/status", {"status": status.value})
+        return self.client._make_request("PATCH", f"/agent/{agent_id}/status", {"status": status})
     
     def train(self, agent_id: str, training_data: Dict) -> Dict:
         """Trigger agent training"""
