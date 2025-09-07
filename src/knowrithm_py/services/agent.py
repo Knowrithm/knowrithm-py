@@ -44,10 +44,10 @@ class AgentService:
         """Update agent status"""
         return self.client._make_request("PATCH", f"/agent/{agent_id}/status", {"status": status})
     
-    def train(self, agent_id: str, training_data: Dict) -> Dict:
-        """Trigger agent training"""
-        return self.client._make_request("POST", f"/agent/{agent_id}/train", training_data)
+    # def train(self, agent_id: str, training_data: Dict) -> Dict:
+    #     """Trigger agent training"""
+    #     return self.client._make_request("POST", f"/agent/{agent_id}/train", training_data)
     
-    def get_training_status(self, agent_id: str) -> Dict:
-        """Get agent training status"""
-        return self.client._make_request("GET", f"/agent/{agent_id}/training-status")
+    # def get_training_status(self, agent_id: str) -> Dict:
+    #     """Get agent training status"""
+    #     return self.client._make_request("GET", f"/agent/{agent_id}/training-status")
