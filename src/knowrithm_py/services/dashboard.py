@@ -23,16 +23,34 @@ class AnalyticsService:
             params["start_date"] = start_date
         if end_date:
             params["end_date"] = end_date
-        return self.client._make_request("GET", f"/analytics/agents/{agent_id}/metrics", params=params)
+        return self.client._make_request("GET", f"/analytic/agent/{agent_id}", params=params)
+    
+    
+    def get_agent_performance_comparison(self, agent_id: str, start_date: Optional[str] = None, 
+                         end_date: Optional[str] = None) -> Dict:
+        """Get metrics for specific agent"""
+        params = {}
+        if start_date:
+            params["start_date"] = start_date
+        if end_date:
+            params["end_date"] = end_date
+        return self.client._make_request("GET", f"/analytic/agent/{agent_id}/performance-comparison", params=params)
+    
     
     def get_conversation_analytics(self, conversation_id: str) -> Dict:
         """Get analytics for specific conversation"""
-        return self.client._make_request("GET", f"/analytics/conversations/{conversation_id}")
+        return self.client._make_request("GET", f"/analytic/conversation/{conversation_id}")
     
-    def get_lead_analytics(self, company_id: Optional[str] = None) -> Dict:
+    def get_lead_analytics(self, start_date: Optional[str] = None, 
+                         end_date: Optional[str] = None) -> Dict:
         """Get lead conversion analytics"""
-        params = {"company_id": company_id} if company_id else {}
-        return self.client._make_request("GET", "/analytics/leads", params=params)
+        # params = {"company_id": company_id} if company_id else {}
+        params = {}
+        if start_date:
+            params["start_date"] = start_date
+        if end_date:
+            params["end_date"] = end_date
+        return self.client._make_request("GET", "/analytic/lead", params=params)
     
     def get_usage_metrics(self, start_date: Optional[str] = None, end_date: Optional[str] = None) -> Dict:
         """Get platform usage metrics"""
@@ -41,7 +59,7 @@ class AnalyticsService:
             params["start_date"] = start_date
         if end_date:
             params["end_date"] = end_date
-        return self.client._make_request("GET", "/analytics/usage", params=params)
+        return self.client._make_request("GET", "/analytic/usage", params=params)
     
     def health_check(self) -> Dict:
         """System health check"""

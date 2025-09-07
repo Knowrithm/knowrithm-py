@@ -40,9 +40,9 @@ class CompanyService:
     #     """Restore a soft-deleted company"""
     #     return self.client._make_request("PATCH", f"/company/{company_id}/restore")
     
-    def get_statistics(self) -> Dict:
+    def get_statistics(self, days=None) -> Dict:
         """Get company statistics and metrics"""
-        return self.client._make_request("GET", f"/company/statistics")
+        return self.client._make_request("GET", f"/company/statistics", params={"days": days} if days else None)
     
     # def verify_company(self, company_id: str) -> Dict:
     #     """Verify a company (admin only)"""
