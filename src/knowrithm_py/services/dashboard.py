@@ -50,7 +50,7 @@ class AnalyticsService:
             params["start_date"] = start_date
         if end_date:
             params["end_date"] = end_date
-        return self.client._make_request("GET", "/analytic/lead", params=params)
+        return self.client._make_request("GET", "/analytic/leads", params=params)
     
     def get_usage_metrics(self, start_date: Optional[str] = None, end_date: Optional[str] = None) -> Dict:
         """Get platform usage metrics"""
