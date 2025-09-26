@@ -1,5 +1,5 @@
 
-![Uploading 20250925_2353_Futuristic Knowrithm Logo_simple_compose_01k616ywakf1r91ekdeb54xy9p - Edited.png…]()
+<img width="999" height="562" alt="20250925_2353_Futuristic Knowrithm Logo_simple_compose_01k616ywakf1r91ekdeb54xy9p - Edited" src="https://github.com/user-attachments/assets/ceb44de0-3d1e-435a-b9df-075e7a535ecb" />
 
 # Knowrithm Python SDK
 
