@@ -1,3 +1,6 @@
+
+![Uploading 20250925_2353_Futuristic Knowrithm Logo_simple_compose_01k616ywakf1r91ekdeb54xy9p - Edited.png…]()
+
 # Knowrithm Python SDK
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
