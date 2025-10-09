@@ -64,3 +64,16 @@ class DatabaseService:
         if connection_ids:
             data["connection_ids"] = connection_ids
         return self.client._make_request("POST", "/database-connection/search", data)
+
+    def get_semantic_snapshot(self, connection_id: str) -> Dict:
+        return self.client._make_request("POST", f"/database-connection/{connection_id}/semantic-snapshot")
+        
+    def get_knowledge_graph(self, connection_id: str) -> Dict:
+        return self.client._make_request("POST", f"/database-connection/{connection_id}/knowledge-graph")
+        
+    def get_sample_queries(self, connection_id: str) -> Dict:
+        return self.client._make_request("POST", f"/database-connection/{connection_id}/sample-queries")
+    
+    def text_to_sql(self, connection_id: str, payload: Dict) -> Dict:
+        return self.client._make_request("POST", f"/database-connection/{connection_id}/text-to-sql", payload)
+        

@@ -211,13 +211,9 @@ db_service = DatabaseService(client)
 
 # Create database connection
 db_connection = db_service.create_connection({
-    "name": "Customer Database",
+    "url": "postgresql://user:password@host:port/db",
     "type": "postgresql",
-    "host": "localhost",
-    "port": 5432,
-    "database": "customers",
-    "username": "db_user",
-    "password": "db_password"
+    "agent_id": "agent-id"
 })
 
 # Test connection
@@ -404,6 +400,12 @@ address = address_service.create_address(
 - `test_connection(connection_id)` - Test database connection
 - `search(query, connection_ids)` - Search across databases
 - `get_tables(connection_id)` - List database tables
+- `get_semantic_snapshot(connection_id)` - List semantic snapshot
+- `get_knowledge_graph(connection_id)` - List knowledge graph
+- `get_sample_queries(connection_id)` - List sample queries
+- `text_to_sql(connection_id, payload)` - Get suggested SQL query
+
+
 
 ## 🌐 Website Integration
 
