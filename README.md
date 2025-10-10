@@ -36,8 +36,7 @@ from knowrithm_py.knowrithm.client import KnowrithmClient
 # Initialize the client (API key + secret OR provide JWT headers to each call)
 client = KnowrithmClient(
     api_key="your-api-key",
-    api_secret="your-api-secret",
-    base_url="https://app.knowrithm.org"
+    api_secret="your-api-secret"
 )
 
 # Create an agent
