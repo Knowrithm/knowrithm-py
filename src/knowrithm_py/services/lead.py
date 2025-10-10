@@ -1,55 +1,102 @@
 
-from typing import Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from knowrithm_py.knowrithm.client import KnowrithmClient
 
 
 class LeadService:
-    """Lead management service"""
-    
+    """
+    Client abstraction for the lead endpoints located in
+    ``app/blueprints/lead/routes.py``.
+    """
+
     def __init__(self, client: KnowrithmClient):
         self.client = client
-    
-    def register(self, lead_data: Dict) -> Dict:
-        """Lead self-registration"""
-        return self.client._make_request("POST", "/lead/register", lead_data, authenticated=False)
-    
-    def create(self, lead_data: Dict) -> Dict:
-        """Create lead (company admin)"""
-        return self.client._make_request("POST", "/lead", lead_data)
-    
-    def list(self, company_id: Optional[str] = None, status: Optional[str] = None) -> List[Dict]:
-        """List leads with optional filters"""
-        params = {}
-        if company_id:
-            params["company_id"] = company_id
-        if status:
+
+    def register_lead(
+        self,
+        payload: Dict[str, Any],
+        *,
+        headers: Optional[Dict[str, str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Public lead registration used by the widget. The endpoint issues a JWT
+        that can be used for subsequent authenticated widget calls.
+
+        Endpoint:
+            ``POST /v1/lead/register`` - no authentication required.
+        """
+        return self.client._make_request("POST", "/lead/register", data=payload, headers=headers)
+
+    def create_lead(
+        self,
+        payload: Dict[str, Any],
+        *,
+        headers: Optional[Dict[str, str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Create a lead via authenticated API call.
+
+        Endpoint:
+            ``POST /v1/lead`` - requires write scope or JWT.
+        """
+        return self.client._make_request("POST", "/lead", data=payload, headers=headers)
+
+    def get_lead(self, lead_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+        """
+        Fetch an individual lead.
+
+        Endpoint:
+            ``GET /v1/lead/<lead_id>`` - requires read scope or JWT.
+        """
+        return self.client._make_request("GET", f"/lead/{lead_id}", headers=headers)
+
+    def list_company_leads(
+        self,
+        *,
+        page: Optional[int] = None,
+        per_page: Optional[int] = None,
+        status: Optional[str] = None,
+        search: Optional[str] = None,
+        headers: Optional[Dict[str, str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Paginated list of leads for the authenticated company.
+
+        Endpoint:
+            ``GET /v1/lead/company`` - requires read scope or JWT.
+        """
+        params: Dict[str, Any] = {}
+        if page is not None:
+            params["page"] = page
+        if per_page is not None:
+            params["per_page"] = per_page
+        if status is not None:
             params["status"] = status
-        return self.client._make_request("GET", "/lead/company", params=params)
-    
-    def get(self, lead_id: str) -> Dict:
-        """Get lead details"""
-        return self.client._make_request("GET", f"/lead/{lead_id}")
-    
-    def update(self, lead_id: str, lead_data: Dict) -> Dict:
-        """Update lead information"""
-        return self.client._make_request("PUT", f"/lead/{lead_id}", lead_data)
-    
-    def patch(self, lead_id: str, lead_data: Dict) -> Dict:
-        """Partially update lead information"""
-        return self.client._make_request("PATCH", f"/lead/{lead_id}", lead_data)
-    
-    def delete(self, lead_id: str) -> Dict:
-        """Soft delete a lead"""
-        return self.client._make_request("DELETE", f"/lead/{lead_id}")
-    
-    def update_status(self, lead_id: str, status: str, notes: Optional[str] = None) -> Dict:
-        """Update lead status"""
-        data = {"status": status}
-        if notes:
-            data["notes"] = notes
-        return self.client._make_request("PATCH", f"/lead/{lead_id}/status", data)
-    
-    def add_notes(self, lead_id: str, notes: str) -> Dict:
-        """Add notes to a lead"""
-        return self.client._make_request("POST", f"/lead/{lead_id}/notes", {"notes": notes})
+        if search is not None:
+            params["search"] = search
+        return self.client._make_request("GET", "/lead/company", params=params or None, headers=headers)
+
+    def update_lead(
+        self,
+        lead_id: str,
+        payload: Dict[str, Any],
+        *,
+        headers: Optional[Dict[str, str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Update mutable lead attributes.
+
+        Endpoint:
+            ``PUT /v1/lead/<lead_id>`` - requires write scope or JWT.
+        """
+        return self.client._make_request("PUT", f"/lead/{lead_id}", data=payload, headers=headers)
+
+    def delete_lead(self, lead_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+        """
+        Soft-delete a lead.
+
+        Endpoint:
+            ``DELETE /v1/lead/<lead_id>`` - requires write scope or JWT.
+        """
+        return self.client._make_request("DELETE", f"/lead/{lead_id}", headers=headers)

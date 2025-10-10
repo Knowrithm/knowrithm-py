@@ -4,7 +4,7 @@
 
 import time
 import requests
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 from knowrithm_py.config.config import Config
 from knowrithm_py.dataclass.config import KnowrithmConfig
 from knowrithm_py.dataclass.error import KnowrithmAPIError
@@ -55,7 +55,7 @@ class KnowrithmClient:
         from knowrithm_py.services.address import AddressService
         from knowrithm_py.services.admin import AdminService
         from knowrithm_py.services.agent import AgentService
-        from knowrithm_py.services.auth import AuthService, SessionService, UserService
+        from knowrithm_py.services.auth import ApiKeyService, AuthService, UserService
         from knowrithm_py.services.company import CompanyService
         from knowrithm_py.services.conversation import ConversationService, MessageService
         from knowrithm_py.services.dashboard import AnalyticsService
@@ -64,6 +64,7 @@ class KnowrithmClient:
         from knowrithm_py.services.lead import LeadService
         
         self.auth = AuthService(self)
+        self.api_keys = ApiKeyService(self)
         self.users = UserService(self)
         self.companies = CompanyService(self)
         self.agents = AgentService(self)
@@ -74,7 +75,6 @@ class KnowrithmClient:
         self.messages = MessageService(self)
         self.analytics = AnalyticsService(self)
         self.addresses = AddressService(self)
-        self.sessions = SessionService(self)
         self.admin = AdminService(self)
     
     def _setup_authentication(self):
@@ -82,7 +82,6 @@ class KnowrithmClient:
         self._session.headers.update({
             "X-API-Key": self.api_key,
             "X-API-Secret": self.api_secret,
-            "Content-Type": "application/json"
         })
     
     @property
@@ -95,9 +94,9 @@ class KnowrithmClient:
         endpoint: str, 
         data: Optional[Dict] = None,
         params: Optional[Dict] = None,
-        files: Optional[Dict] = None,
+        files: Optional[Any] = None,
         headers: Optional[Dict] = None
-    ) -> Dict:
+    ) -> Any:
         """Make HTTP request with error handling and retries"""
         url = f"{self.base_url}{endpoint}"
         request_headers = {}
@@ -105,8 +104,11 @@ class KnowrithmClient:
             request_headers.update(headers)
         
         # Add content type for JSON requests
-        if data and not files and 'Content-Type' not in request_headers:
+        if data and not files and "Content-Type" not in request_headers:
             request_headers['Content-Type'] = 'application/json'
+        if files:
+            # Let requests set the multipart boundary automatically.
+            request_headers.pop("Content-Type", None)
         
         for attempt in range(self.config.max_retries):
             try:
@@ -121,7 +123,6 @@ class KnowrithmClient:
                     timeout=self.config.timeout,
                     verify=self.config.verify_ssl
                 )
-                print(response.text)
                 
                 if response.status_code >= 400:
                     error_data = {}
@@ -140,8 +141,12 @@ class KnowrithmClient:
                 # Return empty dict for successful requests with no content
                 if not response.content:
                     return {"success": True}
-                    
-                return response.json()
+                
+                try:
+                    return response.json()
+                except ValueError:
+                    # Non-JSON responses are returned as raw text or bytes
+                    return response.content if files else response.text
                 
             except requests.exceptions.RequestException as e:
                 if attempt == self.config.max_retries - 1:
