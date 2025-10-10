@@ -34,3 +34,4 @@ src/knowrithm_py/services/dashboard.py
 src/knowrithm_py/services/database.py
 src/knowrithm_py/services/document.py
 src/knowrithm_py/services/lead.py
+src/knowrithm_py/services/settings.py
