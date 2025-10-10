@@ -46,7 +46,7 @@ agent = client.agents.create_agent({
     "description": "Customer support assistant",
     "status": "active"
 })
-print(agent["id"])
+print(agent['agent']["id"])
 
 # Upload supporting documents
 client.documents.upload_documents(
@@ -55,8 +55,8 @@ client.documents.upload_documents(
 )
 
 # Start a conversation and send a message
-conversation = client.conversations.create_conversation(agent_id=agent["id"])
-reply = client.messages.send_message(conversation_id=conversation["id"], message="Hello there!")
+conversation = client.conversations.create_conversation(agent_id=agent['agent']["id"])
+reply = client.messages.send_message(conversation_id=conversation['conversation']["id"], message="Hello there!")
 print(reply["history"][-1]["assistant_response"])
 ```
 
