@@ -49,7 +49,7 @@ print(agent['agent']["id"])
 
 # Upload supporting documents
 client.documents.upload_documents(
-    agent_id=agent["id"],
+    agent_id=agent['agent']["id"],
     file_paths=[Path("knowledge-base.pdf")]
 )
 
