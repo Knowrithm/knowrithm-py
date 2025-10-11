@@ -376,7 +376,9 @@ class MessageService:
             message: Plain-text prompt to send to the assistant.
             headers: Optional override headers (e.g. Authorization bearer token).
             stream: When True, return a :class:`MessageStream` yielding :class:`ChatEvent` objects.
-            stream_url: Optional absolute or relative SSE endpoint override.
+            stream_url: Optional absolute or relative SSE endpoint override. Required unless the
+                client's configuration defines ``stream_path_template`` or the API response
+                returns a ``stream_url`` field.
             stream_timeout: Optional timeout (seconds) for establishing/consuming the stream.
             event_types: Optional iterable of event names to emit (others are dropped).
             raw_events: When True, do not attempt JSON decoding of ``data`` payloads.
@@ -549,11 +551,13 @@ class MessageService:
             except ValueError:
                 error_data = {"detail": response.text}
             response.close()
+            base_message = error_data.get(
+                "detail",
+                error_data.get("message", f"HTTP {response.status_code}"),
+            )
+            message = f"{base_message} (GET {stream_url})"
             raise KnowrithmAPIError(
-                message=error_data.get(
-                    "detail",
-                    error_data.get("message", f"HTTP {response.status_code}"),
-                ),
+                message=message,
                 status_code=response.status_code,
                 response_data=error_data,
                 error_code=error_data.get("error_code"),

@@ -55,22 +55,55 @@ client.documents.upload_documents(
 
 # Start a conversation and send a message
 conversation = client.conversations.create_conversation(agent_id=agent['agent']["id"])
+queued = client.messages.send_message(
+    conversation_id=conversation['conversation']["id"],
+    message="Hello there!",
+)
+
+print(queued["status"])           # -> "queued"
+print(queued["poll_url"])         # -> "/v1/conversation/<id>/messages"
+
+# Poll the conversation for new messages once the task completes
+messages = client.conversations.list_conversation_messages(
+    conversation_id=conversation['conversation']["id"]
+)
+for entry in messages.get("messages", []):
+    print(f"{entry['role']}: {entry['content']}")
+```
+
+### Streaming responses (optional)
+
+The API can also push updates over Server-Sent Events (SSE). Configure the
+stream endpoint once, or pass it per call.
+
+```python
+from knowrithm_py.dataclass.config import KnowrithmConfig
+
+client = KnowrithmClient(
+    api_key="your-api-key",
+    api_secret="your-api-secret",
+    config=KnowrithmConfig(
+        base_url="https://app.knowrithm.org",
+        stream_path_template="/conversation/{conversation_id}/events",  # Replace with your SSE route
+    ),
+)
+
+conversation = client.conversations.create_conversation(agent_id=agent['agent']["id"])
 stream = client.messages.send_message(
     conversation_id=conversation['conversation']["id"],
     message="Hello there!",
     stream=True,
+    # Or supply stream_url=f"/conversation/{conversation['conversation']['id']}/events"
 )
 
 with stream:
     for event in stream:
-        # Inspect the event stream until the assistant responds
-        if event.event == "chat_response":
-            print(event.data)
-            break
+        print(event.event, event.data)
 ```
 
-The stream typically emits queue progress events (e.g. ``chat_status``) followed by
-the final assistant payload (e.g. ``chat_response``). Adjust the loop as needed.
+The stream typically emits queue progress events (e.g. ``chat_status``) followed
+by the final assistant payload (e.g. ``chat_response``). Adjust the loop as
+needed.
 
 > **Authentication** - Unless a route explicitly states otherwise, supply either
 > `X-API-Key` + `X-API-Secret` with the proper scopes or `Authorization: Bearer <JWT>`.
@@ -301,7 +334,8 @@ returns the JSON payload (or raw text/bytes for non-JSON responses).
   `PATCH /v1/conversation/<id>/message/restore-all`.
 - `send_message(conversation_id, message, headers=None, stream=False, stream_url=None, stream_timeout=None, event_types=None, raw_events=False)` -
   `POST /v1/conversation/<id>/chat`. When `stream=True`, the method returns a `MessageStream`
-  that yields `ChatEvent` instances from the Server-Sent Events channel.
+  that yields `ChatEvent` instances from the Server-Sent Events channel (configure
+  `stream_path_template` or pass `stream_url`).
 - `delete_message(message_id, headers=None)` - `DELETE /v1/message/<id>`.
 - `restore_message(message_id, headers=None)` - `PATCH /v1/message/<id>/restore`.
 - `list_deleted_messages(headers=None)` - `GET /v1/message/deleted`.
