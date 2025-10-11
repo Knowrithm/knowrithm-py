@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: knowrithm-py
-Version: 0.1.9
+Version: 0.1.10
 Summary: Knowrithm Python SDK
 Author-email: Steven Saad <stevensaad35@gmail.com>
 Project-URL: Homepage, https://github.com/Knowrithm/knowrithm-py.git
@@ -67,9 +67,22 @@ client.documents.upload_documents(
 
 # Start a conversation and send a message
 conversation = client.conversations.create_conversation(agent_id=agent['agent']["id"])
-reply = client.messages.send_message(conversation_id=conversation['conversation']["id"], message="Hello there!")
-print(reply["history"][-1]["assistant_response"])
+stream = client.messages.send_message(
+    conversation_id=conversation['conversation']["id"],
+    message="Hello there!",
+    stream=True,
+)
+
+with stream:
+    for event in stream:
+        # Inspect the event stream until the assistant responds
+        if event.event == "chat_response":
+            print(event.data)
+            break
 ```
+
+The stream typically emits queue progress events (e.g. ``chat_status``) followed by
+the final assistant payload (e.g. ``chat_response``). Adjust the loop as needed.
 
 > **Authentication** - Unless a route explicitly states otherwise, supply either
 > `X-API-Key` + `X-API-Secret` with the proper scopes or `Authorization: Bearer <JWT>`.
@@ -298,8 +311,9 @@ returns the JSON payload (or raw text/bytes for non-JSON responses).
   `PATCH /v1/conversation/<id>/restore`.
 - `restore_all_messages(conversation_id, headers=None)` -
   `PATCH /v1/conversation/<id>/message/restore-all`.
-- `send_message(conversation_id, message, headers=None)` -
-  `POST /v1/conversation/<id>/chat`.
+- `send_message(conversation_id, message, headers=None, stream=False, stream_url=None, stream_timeout=None, event_types=None, raw_events=False)` -
+  `POST /v1/conversation/<id>/chat`. When `stream=True`, the method returns a `MessageStream`
+  that yields `ChatEvent` instances from the Server-Sent Events channel.
 - `delete_message(message_id, headers=None)` - `DELETE /v1/message/<id>`.
 - `restore_message(message_id, headers=None)` - `PATCH /v1/message/<id>/restore`.
 - `list_deleted_messages(headers=None)` - `GET /v1/message/deleted`.
