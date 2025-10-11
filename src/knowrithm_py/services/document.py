@@ -29,10 +29,10 @@ class DocumentService:
     ) -> Dict[str, Any]:
         """
         Upload one or more documents or instruct the API to scrape remote URLs.
-
+        
         Endpoint:
             ``POST /v1/document/upload`` - requires API key scope ``write`` or JWT.
-
+        
         Args:
             agent_id: UUID of the agent to ingest documents for.
             file_paths: Optional iterable of file paths that should be streamed via multipart form data.
@@ -40,41 +40,75 @@ class DocumentService:
             url: Convenience single URL alias (mutually exclusive with ``urls``).
             metadata: Additional fields accepted by the ingestion pipeline (e.g., ``tags``).
             headers: Optional header overrides.
-
+        
         Returns:
             JSON payload describing the uploaded documents and ingestion jobs.
         """
-        payload: Dict[str, Any] = {"agent_id": agent_id}
-        if metadata:
-            payload.update(metadata)
-        if urls:
-            payload["urls"] = list(urls)
-        if url:
-            payload["url"] = url
-
         file_handles: List[Any] = []
-        files_payload: Optional[Iterable[Tuple[str, Tuple[str, Any]]]] = None
-
-        if file_paths:
-            files: List[Tuple[str, Tuple[str, Any]]] = []
-            for path in file_paths:
-                handle = Path(path).expanduser().open("rb")
-                file_handles.append(handle)
-                files.append(("files", (Path(path).name, handle)))
-            files_payload = files
-
+        
         try:
-            return self.client._make_request(
-                "POST",
-                "/document/upload",
-                data=payload,
-                files=files_payload,
-                headers=headers,
-            )
+            # When uploading files, use multipart/form-data with all fields as form data
+            if file_paths:
+                # Build form data payload
+                data_payload: Dict[str, Any] = {"agent_id": agent_id}
+                if metadata:
+                    data_payload.update(metadata)
+                
+                # Add URLs to form data if provided
+                if urls:
+                    data_payload["urls"] = list(urls)
+                if url:
+                    data_payload["url"] = url
+                
+                # Build files list
+                files: List[Tuple[str, Tuple[str, Any]]] = []
+                for path in file_paths:
+                    file_path = Path(path).expanduser()
+                    
+                    # Check if file exists
+                    if not file_path.exists():
+                        raise FileNotFoundError(f"File not found: {file_path}")
+                    
+                    if not file_path.is_file():
+                        raise ValueError(f"Path is not a file: {file_path}")
+                    
+                    handle = file_path.open("rb")
+                    file_handles.append(handle)
+                    files.append(("files", (file_path.name, handle)))
+                
+                return self.client._make_request(
+                    "POST",
+                    "/document/upload",
+                    data=data_payload,
+                    files=files,
+                    headers=headers,
+                )
+            
+            # When only URLs (no files), send as JSON payload
+            else:
+                json_payload: Dict[str, Any] = {"agent_id": agent_id}
+                if metadata:
+                    json_payload.update(metadata)
+                if urls:
+                    json_payload["urls"] = list(urls)
+                if url:
+                    json_payload["url"] = url
+                
+                return self.client._make_request(
+                    "POST",
+                    "/document/upload",
+                    json=json_payload,
+                    headers=headers,
+                )
+        
         finally:
+            # Always close file handles
             for handle in file_handles:
-                handle.close()
-
+                try:
+                    handle.close()
+                except Exception:
+                    pass
+                
     # ------------------------------------------------------------------ #
     # Listing
     # ------------------------------------------------------------------ #

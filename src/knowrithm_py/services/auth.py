@@ -12,14 +12,14 @@ class AuthService:
     def __init__(self, client: KnowrithmClient):
         self.client = client
 
-    def seed_super_admin(self, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
-        """
-        Seed the platform super admin from environment configuration.
+    # def seed_super_admin(self, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+    #     """
+    #     Seed the platform super admin from environment configuration.
 
-        Endpoint:
-            ``GET /v1/auth/super-admin`` - no authentication required.
-        """
-        return self.client._make_request("GET", "/auth/super-admin", headers=headers)
+    #     Endpoint:
+    #         ``GET /v1/auth/super-admin`` - no authentication required.
+    #     """
+    #     return self.client._make_request("GET", "/auth/super-admin", headers=headers)
 
     def register_admin(
         self,

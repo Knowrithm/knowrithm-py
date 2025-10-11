@@ -36,8 +36,7 @@ from knowrithm_py.knowrithm.client import KnowrithmClient
 # Initialize the client (API key + secret OR provide JWT headers to each call)
 client = KnowrithmClient(
     api_key="your-api-key",
-    api_secret="your-api-secret",
-    base_url="https://app.knowrithm.org"
+    api_secret="your-api-secret"
 )
 
 # Create an agent
@@ -46,17 +45,17 @@ agent = client.agents.create_agent({
     "description": "Customer support assistant",
     "status": "active"
 })
-print(agent["id"])
+print(agent['agent']["id"])
 
 # Upload supporting documents
 client.documents.upload_documents(
-    agent_id=agent["id"],
+    agent_id=agent['agent']["id"],
     file_paths=[Path("knowledge-base.pdf")]
 )
 
 # Start a conversation and send a message
-conversation = client.conversations.create_conversation(agent_id=agent["id"])
-reply = client.messages.send_message(conversation_id=conversation["id"], message="Hello there!")
+conversation = client.conversations.create_conversation(agent_id=agent['agent']["id"])
+reply = client.messages.send_message(conversation_id=conversation['conversation']["id"], message="Hello there!")
 print(reply["history"][-1]["assistant_response"])
 ```
 
