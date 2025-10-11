@@ -45,7 +45,7 @@ class MessageStream:
 
     @property
     def metadata(self) -> Dict[str, Any]:
-        """Initial response returned from ``POST /chat``."""
+        """Initial metadata associated with the stream (chat response or custom payload)."""
         return self._metadata
 
     @property
@@ -398,21 +398,14 @@ class MessageService:
         if not stream:
             return response_payload
 
-        resolved_url = self._resolve_stream_url(conversation_id, response_payload, stream_url_override=stream_url)
-        if resolved_url is None:
-            raise KnowrithmAPIError(
-                "Streaming is not configured. Provide 'stream_url' or set "
-                "KnowrithmConfig.stream_path_template/stream_base_url."
-            )
-
-        allowed_events = set(event_types) if event_types else None
-        return self._open_stream(
-            stream_url=resolved_url,
-            initial_payload=response_payload,
+        return self.stream_conversation_messages(
+            conversation_id,
             headers=headers,
-            timeout_override=stream_timeout,
-            allowed_events=allowed_events,
-            parse_json=not raw_events,
+            stream_url=stream_url,
+            stream_timeout=stream_timeout,
+            event_types=event_types,
+            raw_events=raw_events,
+            _initial_metadata=response_payload,
         )
 
     def delete_message(self, message_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
@@ -442,10 +435,63 @@ class MessageService:
         """
         return self.client._make_request("GET", "/message/deleted", headers=headers)
 
+    def stream_conversation_messages(
+        self,
+        conversation_id: str,
+        *,
+        headers: Optional[Dict[str, str]] = None,
+        stream_url: Optional[str] = None,
+        stream_timeout: Optional[float] = None,
+        event_types: Optional[Sequence[str]] = None,
+        raw_events: bool = False,
+        _initial_metadata: Optional[Dict[str, Any]] = None,
+    ) -> MessageStream:
+        """
+        Open a Server-Sent Events stream for a conversation.
+
+        Endpoint:
+            ``GET /v1/conversation/<conversation_id>/messages/stream`` - requires read scope.
+
+        Args:
+            conversation_id: Target conversation identifier.
+            headers: Optional override headers (e.g. Authorization bearer token).
+            stream_url: Optional absolute/relative SSE endpoint override.
+            stream_timeout: Optional timeout (seconds) for establishing/consuming the stream.
+            event_types: Optional iterable of event names to emit (others are dropped).
+            raw_events: When True, do not attempt JSON decoding of ``data`` payloads.
+
+        Returns:
+            A :class:`MessageStream` that yields :class:`ChatEvent` objects.
+        """
+        resolved_url = self._resolve_stream_url(
+            conversation_id,
+            _initial_metadata,
+            stream_url_override=stream_url,
+        )
+        if resolved_url is None:
+            raise KnowrithmAPIError(
+                "Streaming is not configured. Provide 'stream_url' or set "
+                "KnowrithmConfig.stream_path_template/stream_base_url."
+            )
+
+        allowed_events = set(event_types) if event_types else None
+        metadata: Dict[str, Any] = {"conversation_id": conversation_id}
+        if _initial_metadata:
+            metadata.update(_initial_metadata)
+
+        return self._open_stream(
+            stream_url=resolved_url,
+            initial_payload=metadata,
+            headers=headers,
+            timeout_override=stream_timeout,
+            allowed_events=allowed_events,
+            parse_json=not raw_events,
+        )
+
     def _resolve_stream_url(
         self,
         conversation_id: str,
-        response_payload: Dict[str, Any],
+        response_payload: Optional[Dict[str, Any]],
         *,
         stream_url_override: Optional[str] = None,
     ) -> Optional[str]:
@@ -455,8 +501,10 @@ class MessageService:
         if stream_url_override:
             return self._normalize_stream_url(stream_url_override)
 
+        payload = response_payload or {}
+
         for key in ("stream_url", "sse_url", "socket_url"):
-            candidate = response_payload.get(key)
+            candidate = payload.get(key)
             if candidate:
                 return self._normalize_stream_url(str(candidate))
 
@@ -467,8 +515,8 @@ class MessageService:
 
         tokens = {
             "conversation_id": conversation_id,
-            "message_id": response_payload.get("message_id"),
-            "task_id": response_payload.get("task_id"),
+            "message_id": payload.get("message_id"),
+            "task_id": payload.get("task_id"),
         }
 
         try:
@@ -510,7 +558,7 @@ class MessageService:
         self,
         *,
         stream_url: str,
-        initial_payload: Dict[str, Any],
+        initial_payload: Optional[Dict[str, Any]],
         headers: Optional[Dict[str, str]],
         timeout_override: Optional[float],
         allowed_events: Optional[Set[str]],
@@ -569,8 +617,11 @@ class MessageService:
             parse_json=parse_json,
         )
 
+        metadata = dict(initial_payload) if initial_payload else {}
+        metadata.setdefault("stream_url", stream_url)
+
         return MessageStream(
-            metadata=initial_payload,
+            metadata=metadata,
             iterator=iterator,
             response=response,
             stream_url=stream_url,

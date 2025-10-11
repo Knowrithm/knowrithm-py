@@ -11,7 +11,7 @@ class KnowrithmConfig:
         max_retries: int = 3,
         retry_backoff_factor: float = 1.5,
         verify_ssl: bool = True,
-        stream_path_template: Optional[str] = None,
+        stream_path_template: Optional[str] = "/conversation/{conversation_id}/messages/stream",
         stream_base_url: Optional[str] = None,
         stream_timeout: Optional[float] = None,
     ):

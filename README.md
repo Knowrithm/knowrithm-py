@@ -83,8 +83,8 @@ client = KnowrithmClient(
     api_key="your-api-key",
     api_secret="your-api-secret",
     config=KnowrithmConfig(
-        base_url="https://app.knowrithm.org",
-        stream_path_template="/conversation/{conversation_id}/events",  # Replace with your SSE route
+        base_url="https://app.knowrithm.org/api",
+        stream_path_template="/conversation/{conversation_id}/messages/stream",  # Replace with your SSE route
     ),
 )
 
@@ -93,17 +93,23 @@ stream = client.messages.send_message(
     conversation_id=conversation['conversation']["id"],
     message="Hello there!",
     stream=True,
-    # Or supply stream_url=f"/conversation/{conversation['conversation']['id']}/events"
+    # Or supply stream_url=f"/conversation/{conversation['conversation']['id']}/messages/stream"
 )
 
 with stream:
     for event in stream:
         print(event.event, event.data)
+
+# Alternatively open the stream directly:
+direct_stream = client.messages.stream_conversation_messages(
+    conversation_id=conversation['conversation']["id"]
+)
 ```
 
 The stream typically emits queue progress events (e.g. ``chat_status``) followed
 by the final assistant payload (e.g. ``chat_response``). Adjust the loop as
-needed.
+needed. A ``503`` response indicates the streaming backend is temporarily
+disabled; fall back to polling in that case.
 
 > **Authentication** - Unless a route explicitly states otherwise, supply either
 > `X-API-Key` + `X-API-Secret` with the proper scopes or `Authorization: Bearer <JWT>`.
@@ -336,6 +342,8 @@ returns the JSON payload (or raw text/bytes for non-JSON responses).
   `POST /v1/conversation/<id>/chat`. When `stream=True`, the method returns a `MessageStream`
   that yields `ChatEvent` instances from the Server-Sent Events channel (configure
   `stream_path_template` or pass `stream_url`).
+- `stream_conversation_messages(conversation_id, headers=None, stream_url=None, stream_timeout=None, event_types=None, raw_events=False)` -
+  `GET /v1/conversation/<id>/messages/stream`.
 - `delete_message(message_id, headers=None)` - `DELETE /v1/message/<id>`.
 - `restore_message(message_id, headers=None)` - `PATCH /v1/message/<id>/restore`.
 - `list_deleted_messages(headers=None)` - `GET /v1/message/deleted`.
