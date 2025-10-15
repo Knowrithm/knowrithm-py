@@ -15,22 +15,72 @@ class AgentService:
 
     def create_agent(
         self,
-        payload: Dict[str, Any],
+        payload: Optional[Dict[str, Any]] = None,
         *,
+        settings: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, str]] = None,
     ) -> Dict[str, Any]:
         """
-        Create a new agent bound to the authenticated company and optional LLM settings.
+        Create a new agent and provision dedicated LLM settings in a single request.
 
         Endpoint:
             ``POST /v1/agent`` - requires API key scope ``write`` or JWT with equivalent rights.
 
-        Payload:
-            Must include ``name``; may include ``description``, ``avatar_url``,
-            ``llm_settings_id``, ``personality_traits``, ``capabilities``,
-            ``operating_hours``, ``languages``, ``status`` (see README).
+        Args:
+            payload: Base agent fields such as ``name``, ``description``, ``avatar_url``,
+                and conversation configuration. The dictionary may already contain the
+                LLM/embedding identifiers that are now required by the API.
+            settings: Optional LLM settings overrides. Keys present in this dictionary are
+                merged into ``payload`` and support the same names accepted by
+                ``POST /v1/settings`` (for example ``llm_temperature`` or ``embedding_dimension``).
+                At minimum the combined payload must include
+                ``llm_provider_id``, ``llm_model_id``, ``embedding_provider_id``, and
+                ``embedding_model_id`` so the API can create a dedicated settings record.
+
+        Raises:
+            ValueError: If the request is missing any of the required LLM or embedding identifiers.
         """
-        return self.client._make_request("POST", "/agent", data=payload, headers=headers)
+        request_payload: Dict[str, Any] = {}
+        if payload:
+            request_payload.update(payload)
+
+        if settings:
+            allowed_setting_keys = {
+                "llm_provider_id",
+                "llm_model_id",
+                "llm_api_key",
+                "llm_api_base_url",
+                "llm_temperature",
+                "llm_max_tokens",
+                "llm_additional_params",
+                "embedding_provider_id",
+                "embedding_model_id",
+                "embedding_api_key",
+                "embedding_api_base_url",
+                "embedding_dimension",
+                "embedding_additional_params",
+                "widget_script_url",
+                "widget_config",
+            }
+            for key in allowed_setting_keys:
+                if key in settings and settings[key] is not None:
+                    request_payload[key] = settings[key]
+
+        required_fields = (
+            "name",
+            "llm_provider_id",
+            "llm_model_id",
+            "embedding_provider_id",
+            "embedding_model_id",
+        )
+        missing_fields = [field for field in required_fields if not request_payload.get(field)]
+        if missing_fields:
+            raise ValueError(
+                "create_agent requires the following fields so that LLM settings can "
+                f"be provisioned automatically: {', '.join(missing_fields)}."
+            )
+
+        return self.client._make_request("POST", "/agent", data=request_payload, headers=headers)
 
     def get_agent(self, agent_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """

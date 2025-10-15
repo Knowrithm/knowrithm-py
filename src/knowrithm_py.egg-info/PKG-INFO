@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: knowrithm-py
-Version: 0.1.12
+Version: 0.1.13
 Summary: Knowrithm Python SDK
 Author-email: Steven Saad <stevensaad35@gmail.com>
 Project-URL: Homepage, https://github.com/Knowrithm/knowrithm-py.git
@@ -51,13 +51,25 @@ client = KnowrithmClient(
     api_secret="your-api-secret"
 )
 
-# Create an agent
-agent = client.agents.create_agent({
-    "name": "Support Bot",
-    "description": "Customer support assistant",
-    "status": "active"
-})
+# Create an agent (LLM + embedding settings are created automatically)
+agent = client.agents.create_agent(
+    {
+        "name": "Support Bot",
+        "description": "Customer support assistant",
+        "status": "active",
+    },
+    settings={
+        "llm_provider_id": "6fa1fc5e-a7de-4c98-b203-20e063db89fe",
+        "llm_model_id": "8f3c2d09-0d0f-4fcf-83da-79d58a0d30d5",
+        "embedding_provider_id": "75d4ceaf-6a3c-4bd3-98f0-0bcf2bb9c2d4",
+        "embedding_model_id": "bc03b08f-8f44-4a1e-9227-f0022f8b5d4e",
+        "llm_temperature": 0.7,
+    },
+)
 print(agent['agent']["id"])
+
+# The settings dictionary is merged into the request payload before the request
+# is sent. If you prefer, inline the same keys directly in the first argument.
 
 # Upload supporting documents
 client.documents.upload_documents(
@@ -232,8 +244,10 @@ returns the JSON payload (or raw text/bytes for non-JSON responses).
 
 ### AgentService (`client.agents`)
 
-- `create_agent(payload, headers=None)` - `POST /v1/agent`. `payload` must include `name` and
-  may contain description, avatar URL, LLM settings, etc.
+- `create_agent(payload=None, *, settings=None, headers=None)` - `POST /v1/agent`. The combined
+  payload must include `name`, `llm_provider_id`, `llm_model_id`, `embedding_provider_id`, and
+  `embedding_model_id`. Optional values such as `llm_temperature`, API keys, or widget overrides
+  can be supplied via the `settings` dictionary.
 - `get_agent(agent_id, headers=None)` - `GET /v1/agent/<id>`. Public route.
 - `list_agents(company_id=None, status=None, search=None, page=None, per_page=None, headers=None)` -
   `GET /v1/agent`.
