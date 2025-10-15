@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: knowrithm-py
-Version: 0.1.13
+Version: 0.1.14
 Summary: Knowrithm Python SDK
 Author-email: Steven Saad <stevensaad35@gmail.com>
 Project-URL: Homepage, https://github.com/Knowrithm/knowrithm-py.git
@@ -51,7 +51,7 @@ client = KnowrithmClient(
     api_secret="your-api-secret"
 )
 
-# Create an agent (LLM + embedding settings are created automatically)
+# Create an agent (settings created automatically – provider/model names work too)
 agent = client.agents.create_agent(
     {
         "name": "Support Bot",
@@ -59,17 +59,17 @@ agent = client.agents.create_agent(
         "status": "active",
     },
     settings={
-        "llm_provider_id": "6fa1fc5e-a7de-4c98-b203-20e063db89fe",
-        "llm_model_id": "8f3c2d09-0d0f-4fcf-83da-79d58a0d30d5",
-        "embedding_provider_id": "75d4ceaf-6a3c-4bd3-98f0-0bcf2bb9c2d4",
-        "embedding_model_id": "bc03b08f-8f44-4a1e-9227-f0022f8b5d4e",
+        "llm_provider": "openai",
+        "llm_model": "gpt-3.5-turbo-16k",
+        "embedding_provider": "openai",
+        "embedding_model": "text-embedding-ada-002",
         "llm_temperature": 0.7,
     },
 )
 print(agent['agent']["id"])
 
-# The settings dictionary is merged into the request payload before the request
-# is sent. If you prefer, inline the same keys directly in the first argument.
+# When provider/model names are supplied the SDK calls /v1/sdk/agent under the hood.
+# Pass ID-based fields instead if you need explicit control over provider records.
 
 # Upload supporting documents
 client.documents.upload_documents(
@@ -244,10 +244,12 @@ returns the JSON payload (or raw text/bytes for non-JSON responses).
 
 ### AgentService (`client.agents`)
 
-- `create_agent(payload=None, *, settings=None, headers=None)` - `POST /v1/agent`. The combined
-  payload must include `name`, `llm_provider_id`, `llm_model_id`, `embedding_provider_id`, and
-  `embedding_model_id`. Optional values such as `llm_temperature`, API keys, or widget overrides
-  can be supplied via the `settings` dictionary.
+- `create_agent(payload, *, settings=None, headers=None)` - `POST /v1/agent` by default. When
+  `settings` includes provider/model names the SDK transparently calls `POST /v1/sdk/agent`. Ensure
+  the request includes `name` plus either ID-based fields or the name-based equivalents.
+- `create_agent_with_provider_names(payload=None, *, settings=None, headers=None)` -
+  Convenience wrapper around `POST /v1/sdk/agent`. Accepts the same `settings` keys as
+  `/v1/sdk/settings` (provider/model names, optional overrides, credentials).
 - `get_agent(agent_id, headers=None)` - `GET /v1/agent/<id>`. Public route.
 - `list_agents(company_id=None, status=None, search=None, page=None, per_page=None, headers=None)` -
   `GET /v1/agent`.
@@ -261,6 +263,15 @@ returns the JSON payload (or raw text/bytes for non-JSON responses).
   `POST /v1/agent/<id>/clone`.
 - `fetch_widget_script(headers=None)` - `GET /widget.js`. Returns the public widget JavaScript.
 - `render_test_page(body_html, headers=None)` - `POST /test`. Renders a test HTML snippet.
+
+### SettingsService (`client.settings`)
+
+- `create_settings(...)` - `POST /v1/settings`. Create settings with explicit provider/model IDs.
+- `create_settings_with_provider_names(...)` - `POST /v1/sdk/settings`. Use provider/model names and
+  optional overrides to let the API resolve IDs automatically.
+- `get_settings(settings_id, headers=None)` - `GET /v1/settings/<id>`. Retrieve a settings record.
+- `update_settings(settings_id, ..., headers=None)` - `PUT /v1/settings/<id>`. Update settings.
+- Additional helpers mirror the full `/v1/settings` and `/v1/providers` API surface.
 
 ### AnalyticsService (`client.analytics`)
 
