@@ -239,6 +239,7 @@ returns the JSON payload (or raw text/bytes for non-JSON responses).
   Convenience wrapper around `POST /v1/sdk/agent`. Accepts the same `settings` keys as
   `/v1/sdk/settings` (provider/model names, optional overrides, credentials).
 - `get_agent(agent_id, headers=None)` - `GET /v1/agent/<id>`. Public route.
+- `get_agent_by_name(name, company_id=None, headers=None)` - `GET /v1/agent/by-name/<name>`.
 - `list_agents(company_id=None, status=None, search=None, page=None, per_page=None, headers=None)` -
   `GET /v1/agent`.
 - `update_agent(agent_id, payload, headers=None)` - `PUT /v1/agent/<id>`.
@@ -353,6 +354,10 @@ returns the JSON payload (or raw text/bytes for non-JSON responses).
 - `list_conversations(page=None, per_page=None, headers=None)` - `GET /v1/conversation`.
 - `list_conversations_for_entity(page=None, per_page=None, headers=None)` -
   `GET /v1/conversation/entity`.
+- `list_conversations_by_entity(entity_id, entity_type=None, status=None, page=None, per_page=None, headers=None)` -
+  `GET /v1/conversation/entity/<entity_id>`.
+- `list_conversations_by_agent(agent_id, status=None, page=None, per_page=None, headers=None)` -
+  `GET /v1/conversation/agent/<agent_id>`.
 - `list_deleted_conversations(headers=None)` - `GET /v1/conversation/deleted`.
 - `list_conversation_messages(conversation_id, page=None, per_page=None, headers=None)` -
   `GET /v1/conversation/<id>/messages`.

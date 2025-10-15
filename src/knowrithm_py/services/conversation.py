@@ -253,6 +253,73 @@ class ConversationService:
             params["per_page"] = per_page
         return self.client._make_request("GET", "/conversation/entity", params=params or None, headers=headers)
 
+    def list_conversations_by_entity(
+        self,
+        entity_id: str,
+        *,
+        entity_type: Optional[str] = None,
+        status: Optional[str] = None,
+        page: Optional[int] = None,
+        per_page: Optional[int] = None,
+        headers: Optional[Dict[str, str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Retrieve conversations for the provided entity identifier.
+
+        Endpoint:
+            ``GET /v1/conversation/entity/<entity_id>`` - requires read scope or JWT.
+        """
+        if not entity_id:
+            raise ValueError("list_conversations_by_entity requires a non-empty entity_id.")
+
+        params: Dict[str, Any] = {}
+        if entity_type is not None:
+            params["entity_type"] = entity_type
+        if status is not None:
+            params["status"] = status
+        if page is not None:
+            params["page"] = page
+        if per_page is not None:
+            params["per_page"] = per_page
+        return self.client._make_request(
+            "GET",
+            f"/conversation/entity/{entity_id}",
+            params=params or None,
+            headers=headers,
+        )
+
+    def list_conversations_by_agent(
+        self,
+        agent_id: str,
+        *,
+        status: Optional[str] = None,
+        page: Optional[int] = None,
+        per_page: Optional[int] = None,
+        headers: Optional[Dict[str, str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Retrieve conversations handled by the specified agent.
+
+        Endpoint:
+            ``GET /v1/conversation/agent/<agent_id>`` - requires read scope or JWT.
+        """
+        if not agent_id:
+            raise ValueError("list_conversations_by_agent requires a non-empty agent_id.")
+
+        params: Dict[str, Any] = {}
+        if status is not None:
+            params["status"] = status
+        if page is not None:
+            params["page"] = page
+        if per_page is not None:
+            params["per_page"] = per_page
+        return self.client._make_request(
+            "GET",
+            f"/conversation/agent/{agent_id}",
+            params=params or None,
+            headers=headers,
+        )
+
     def list_deleted_conversations(self, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
         List soft-deleted conversations.

@@ -1,5 +1,6 @@
 
 from typing import Any, Dict, List, Optional
+from urllib.parse import quote
 
 from knowrithm_py.knowrithm.client import KnowrithmClient
 
@@ -168,6 +169,38 @@ class AgentService:
             ``GET /v1/agent/<agent_id>`` - no authentication required.
         """
         return self.client._make_request("GET", f"/agent/{agent_id}", headers=headers)
+
+    def get_agent_by_name(
+        self,
+        name: str,
+        *,
+        company_id: Optional[str] = None,
+        headers: Optional[Dict[str, str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Retrieve agent details by name (case-insensitive).
+
+        Endpoint:
+            ``GET /v1/agent/by-name/<name>`` - requires read scope or JWT.
+
+        Args:
+            name: Agent name to resolve.
+            company_id: Optional company scope override (super admins only).
+        """
+        if not name:
+            raise ValueError("get_agent_by_name requires a non-empty agent name.")
+
+        params: Dict[str, Any] = {}
+        if company_id is not None:
+            params["company_id"] = company_id
+
+        encoded_name = quote(name, safe="")
+        return self.client._make_request(
+            "GET",
+            f"/agent/by-name/{encoded_name}",
+            params=params or None,
+            headers=headers,
+        )
 
     def list_agents(
         self,
