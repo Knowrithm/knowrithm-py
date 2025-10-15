@@ -61,6 +61,7 @@ class KnowrithmClient:
         from knowrithm_py.services.dashboard import AnalyticsService
         from knowrithm_py.services.database import DatabaseService
         from knowrithm_py.services.document import DocumentService
+        from knowrithm_py.services.settings import SettingsService
         from knowrithm_py.services.lead import LeadService
         
         self.auth = AuthService(self)
@@ -74,6 +75,7 @@ class KnowrithmClient:
         self.conversations = ConversationService(self)
         self.messages = MessageService(self)
         self.analytics = AnalyticsService(self)
+        self.settings = SettingsService(self)
         self.addresses = AddressService(self)
         self.admin = AdminService(self)
     

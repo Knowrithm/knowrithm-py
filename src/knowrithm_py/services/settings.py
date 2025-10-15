@@ -74,6 +74,81 @@ class SettingsService:
             payload["is_default"] = is_default
         return self.client._make_request("POST", "/settings", data=payload, headers=headers)
 
+    def create_settings_with_provider_names(
+        self,
+        llm_provider: str,
+        llm_model: str,
+        embedding_provider: str,
+        embedding_model: str,
+        *,
+        agent_id: Optional[str] = None,
+        llm_provider_id: Optional[str] = None,
+        llm_model_id: Optional[str] = None,
+        llm_api_key: Optional[str] = None,
+        llm_api_base_url: Optional[str] = None,
+        llm_temperature: Optional[float] = None,
+        llm_max_tokens: Optional[int] = None,
+        llm_additional_params: Optional[Dict[str, Any]] = None,
+        embedding_provider_id: Optional[str] = None,
+        embedding_model_id: Optional[str] = None,
+        embedding_api_key: Optional[str] = None,
+        embedding_api_base_url: Optional[str] = None,
+        embedding_dimension: Optional[int] = None,
+        embedding_additional_params: Optional[Dict[str, Any]] = None,
+        widget_script_url: Optional[str] = None,
+        widget_config: Optional[Dict[str, Any]] = None,
+        is_default: Optional[bool] = None,
+        headers: Optional[Dict[str, str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Create an LLM settings record by referencing provider/model names.
+
+        Endpoint:
+            ``POST /v1/sdk/settings`` - requires API key scope ``write`` or JWT.
+        """
+        payload: Dict[str, Any] = {
+            "llm_provider": llm_provider,
+            "llm_model": llm_model,
+            "embedding_provider": embedding_provider,
+            "embedding_model": embedding_model,
+        }
+        if agent_id is not None:
+            payload["agent_id"] = agent_id
+        if llm_provider_id is not None:
+            payload["llm_provider_id"] = llm_provider_id
+        if llm_model_id is not None:
+            payload["llm_model_id"] = llm_model_id
+        if llm_api_key is not None:
+            payload["llm_api_key"] = llm_api_key
+        if llm_api_base_url is not None:
+            payload["llm_api_base_url"] = llm_api_base_url
+        if llm_temperature is not None:
+            payload["llm_temperature"] = llm_temperature
+        if llm_max_tokens is not None:
+            payload["llm_max_tokens"] = llm_max_tokens
+        if llm_additional_params is not None:
+            payload["llm_additional_params"] = llm_additional_params
+        if embedding_provider_id is not None:
+            payload["embedding_provider_id"] = embedding_provider_id
+        if embedding_model_id is not None:
+            payload["embedding_model_id"] = embedding_model_id
+        if embedding_api_key is not None:
+            payload["embedding_api_key"] = embedding_api_key
+        if embedding_api_base_url is not None:
+            payload["embedding_api_base_url"] = embedding_api_base_url
+        if embedding_dimension is not None:
+            payload["embedding_dimension"] = embedding_dimension
+        if embedding_additional_params is not None:
+            payload["embedding_additional_params"] = embedding_additional_params
+        if widget_script_url is not None:
+            payload["widget_script_url"] = widget_script_url
+        if widget_config is not None:
+            payload["widget_config"] = widget_config
+        if is_default is not None:
+            payload["is_default"] = is_default
+
+        return self.client._make_request("POST", "/sdk/settings", data=payload, headers=headers)
+
     def update_settings(
         self,
         settings_id: str,
@@ -525,4 +600,3 @@ class ProviderService:
             f"/providers/{provider_id}/models/{model_id}",
             headers=headers,
         )
-

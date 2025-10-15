@@ -15,36 +15,38 @@ class AgentService:
 
     def create_agent(
         self,
-        payload: Optional[Dict[str, Any]] = None,
+        payload: Dict[str, Any],
         *,
         settings: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, str]] = None,
     ) -> Dict[str, Any]:
         """
-        Create a new agent and provision dedicated LLM settings in a single request.
+        Create a new agent and provision dedicated LLM settings.
 
         Endpoint:
             ``POST /v1/agent`` - requires API key scope ``write`` or JWT with equivalent rights.
 
         Args:
-            payload: Base agent fields such as ``name``, ``description``, ``avatar_url``,
-                and conversation configuration. The dictionary may already contain the
-                LLM/embedding identifiers that are now required by the API.
-            settings: Optional LLM settings overrides. Keys present in this dictionary are
-                merged into ``payload`` and support the same names accepted by
-                ``POST /v1/settings`` (for example ``llm_temperature`` or ``embedding_dimension``).
-                At minimum the combined payload must include
-                ``llm_provider_id``, ``llm_model_id``, ``embedding_provider_id``, and
-                ``embedding_model_id`` so the API can create a dedicated settings record.
+            payload: Must include ``name`` plus either provider/model IDs or, when combined with
+                ``settings``, the required identifiers or names.
+            settings: Optional dictionary. When it contains provider/model *names* (for example
+                ``llm_provider``), the SDK will call ``POST /v1/sdk/agent`` automatically. When it
+                only contains ID-based keys, those values are merged into ``payload`` and the
+                standard endpoint is used.
 
         Raises:
-            ValueError: If the request is missing any of the required LLM or embedding identifiers.
+            ValueError: If required identifiers are missing.
         """
-        request_payload: Dict[str, Any] = {}
-        if payload:
-            request_payload.update(payload)
-
         if settings:
+            has_provider_names = all(
+                settings.get(field)
+                for field in ("llm_provider", "llm_model", "embedding_provider", "embedding_model")
+            )
+            if has_provider_names:
+                return self.create_agent_with_provider_names(
+                    payload=payload, settings=settings, headers=headers
+                )
+
             allowed_setting_keys = {
                 "llm_provider_id",
                 "llm_model_id",
@@ -62,9 +64,10 @@ class AgentService:
                 "widget_script_url",
                 "widget_config",
             }
+            payload = dict(payload)
             for key in allowed_setting_keys:
                 if key in settings and settings[key] is not None:
-                    request_payload[key] = settings[key]
+                    payload[key] = settings[key]
 
         required_fields = (
             "name",
@@ -73,14 +76,89 @@ class AgentService:
             "embedding_provider_id",
             "embedding_model_id",
         )
-        missing_fields = [field for field in required_fields if not request_payload.get(field)]
+        missing_fields = [field for field in required_fields if not payload.get(field)]
         if missing_fields:
             raise ValueError(
                 "create_agent requires the following fields so that LLM settings can "
                 f"be provisioned automatically: {', '.join(missing_fields)}."
             )
 
-        return self.client._make_request("POST", "/agent", data=request_payload, headers=headers)
+        return self.client._make_request("POST", "/agent", data=payload, headers=headers)
+
+    def create_agent_with_provider_names(
+        self,
+        payload: Optional[Dict[str, Any]] = None,
+        *,
+        settings: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Create a new agent by supplying provider and model names instead of IDs.
+
+        Endpoint:
+            ``POST /v1/sdk/agent`` - requires API key scope ``write`` or JWT with equivalent rights.
+
+        Args:
+            payload: Base agent fields (for example ``name``, ``description``, ``languages``).
+            settings: Required settings dictionary containing provider/model names and optional
+                overrides. The dictionary supports the keys accepted by
+                ``POST /v1/sdk/settings`` (for example ``llm_provider``, ``llm_model``,
+                ``embedding_provider``, ``embedding_model``, and optional API credentials).
+
+        Raises:
+            ValueError: If ``name`` or any of the required provider/model values are missing.
+        """
+        request_payload: Dict[str, Any] = {}
+        if payload:
+            request_payload.update(payload)
+
+        settings_payload: Dict[str, Any] = {}
+        if settings:
+            allowed_setting_keys = {
+                "llm_provider",
+                "llm_provider_id",
+                "llm_model",
+                "llm_model_id",
+                "llm_api_key",
+                "llm_api_base_url",
+                "llm_temperature",
+                "llm_max_tokens",
+                "llm_additional_params",
+                "embedding_provider",
+                "embedding_provider_id",
+                "embedding_model",
+                "embedding_model_id",
+                "embedding_api_key",
+                "embedding_api_base_url",
+                "embedding_dimension",
+                "embedding_additional_params",
+                "widget_script_url",
+                "widget_config",
+                "is_default",
+            }
+            for key in allowed_setting_keys:
+                if key in settings and settings[key] is not None:
+                    settings_payload[key] = settings[key]
+
+        required_settings_fields = (
+            "llm_provider",
+            "llm_model",
+            "embedding_provider",
+            "embedding_model",
+        )
+        missing_settings = [field for field in required_settings_fields if not settings_payload.get(field)]
+        if missing_settings:
+            raise ValueError(
+                "create_agent_with_provider_names requires settings to include "
+                f"{', '.join(missing_settings)}."
+            )
+
+        if not request_payload.get("name"):
+            raise ValueError("create_agent_with_provider_names requires the agent payload to include 'name'.")
+
+        request_payload["settings"] = settings_payload
+
+        return self.client._make_request("POST", "/sdk/agent", data=request_payload, headers=headers)
 
     def get_agent(self, agent_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
