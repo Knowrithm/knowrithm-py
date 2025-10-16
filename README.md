@@ -1,3 +1,6 @@
+
+<img width="831" height="294" alt="20250925_2353_Futuristic Knowrithm Logo_simple_compose_01k616ywakf1r91ekdeb54xy9p" src="https://github.com/user-attachments/assets/ef7001e2-dbb6-4b06-9e9d-b41669463f9c" />
+
 # Knowrithm Python SDK
 
 [![Python Version](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/downloads/)
