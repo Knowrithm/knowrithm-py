@@ -65,6 +65,16 @@ client.documents.upload_documents(
     file_paths=[Path("knowledge-base.pdf")]
 )
 
+# Register a website so the crawler can ingest public pages
+website_source = client.websites.register_source(
+    {
+        "agent_id": agent['agent']["id"],
+        "base_url": "https://docs.example.com",
+        "seed_urls": ["https://docs.example.com/getting-started"],
+        "max_pages": 100,
+    }
+)
+
 # Start a conversation and send a message
 conversation = client.conversations.create_conversation(agent_id=agent['agent']["id"])
 queued = client.messages.send_message(
@@ -377,6 +387,14 @@ returns the JSON payload (or raw text/bytes for non-JSON responses).
 - `delete_message(message_id, headers=None)` - `DELETE /v1/message/<id>`.
 - `restore_message(message_id, headers=None)` - `PATCH /v1/message/<id>/restore`.
 - `list_deleted_messages(headers=None)` - `GET /v1/message/deleted`.
+
+### WebsiteService (`client.websites`)
+
+- `register_source(payload, headers=None)` - `POST /v1/website/source`. Register a website for crawling.
+- `list_sources(agent_id=None, headers=None)` - `GET /v1/website/source`. Enumerate website sources, optionally filtered by agent.
+- `list_source_pages(source_id, headers=None)` - `GET /v1/website/source/<id>/pages`. Inspect crawled pages and metadata.
+- `trigger_crawl(source_id, max_pages=None, headers=None)` - `POST /v1/website/source/<id>/crawl`. Queue a fresh crawl job.
+- `handshake(agent_id, url, title=None, trigger_crawl=None, headers=None)` - `POST /v1/website/handshake`. Widget callback that reports page context and can request a crawl.
 
 ### LeadService (`client.leads`)
 

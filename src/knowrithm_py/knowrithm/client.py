@@ -63,6 +63,7 @@ class KnowrithmClient:
         from knowrithm_py.services.document import DocumentService
         from knowrithm_py.services.settings import SettingsService
         from knowrithm_py.services.lead import LeadService
+        from knowrithm_py.services.website import WebsiteService
         
         self.auth = AuthService(self)
         self.api_keys = ApiKeyService(self)
@@ -72,6 +73,7 @@ class KnowrithmClient:
         self.leads = LeadService(self)
         self.documents = DocumentService(self)
         self.databases = DatabaseService(self)
+        self.websites = WebsiteService(self)
         self.conversations = ConversationService(self)
         self.messages = MessageService(self)
         self.analytics = AnalyticsService(self)
