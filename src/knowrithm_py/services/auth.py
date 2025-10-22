@@ -33,7 +33,8 @@ class AuthService:
         Endpoint:
             ``POST /v1/auth/register`` - public.
         """
-        return self.client._make_request("POST", "/auth/register", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/auth/register", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def login(
         self,
@@ -49,7 +50,8 @@ class AuthService:
             ``POST /v1/auth/login`` - public.
         """
         payload = {"email": email, "password": password}
-        return self.client._make_request("POST", "/auth/login", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/auth/login", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def refresh_access_token(
         self,
@@ -65,7 +67,8 @@ class AuthService:
         """
         refresh_headers = headers.copy() if headers else {}
         refresh_headers["Authorization"] = f"Bearer {refresh_token}"
-        return self.client._make_request("POST", "/auth/refresh", headers=refresh_headers)
+        response = self.client._make_request("POST", "/auth/refresh", headers=refresh_headers)
+        return self.client._resolve_async_response(response, headers=refresh_headers)
 
     def logout(self, headers: Dict[str, str]) -> Dict[str, Any]:
         """
@@ -74,7 +77,8 @@ class AuthService:
         Endpoint:
             ``POST /v1/auth/logout`` - requires ``Authorization: Bearer <JWT>``.
         """
-        return self.client._make_request("POST", "/auth/logout", headers=headers)
+        response = self.client._make_request("POST", "/auth/logout", headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def send_verification_email(
         self,
@@ -88,7 +92,8 @@ class AuthService:
         Endpoint:
             ``POST /v1/send`` - public.
         """
-        return self.client._make_request("POST", "/send", data={"email": email}, headers=headers)
+        response = self.client._make_request("POST", "/send", data={"email": email}, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def verify_email(
         self,
@@ -102,7 +107,8 @@ class AuthService:
         Endpoint:
             ``POST /v1/verify`` - public.
         """
-        return self.client._make_request("POST", "/verify", data={"token": token}, headers=headers)
+        response = self.client._make_request("POST", "/verify", data={"token": token}, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def get_current_user(self, headers: Dict[str, str]) -> Dict[str, Any]:
         """
@@ -125,7 +131,8 @@ class AuthService:
         Endpoint:
             ``POST /v1/auth/user`` - requires API key scope ``write`` or admin JWT.
         """
-        return self.client._make_request("POST", "/auth/user", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/auth/user", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
 
 class ApiKeyService:
@@ -149,7 +156,8 @@ class ApiKeyService:
         Endpoint:
             ``POST /v1/auth/api-keys`` - requires JWT.
         """
-        return self.client._make_request("POST", "/auth/api-keys", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/auth/api-keys", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def list_api_keys(self, headers: Dict[str, str]) -> Dict[str, Any]:
         """
@@ -167,7 +175,8 @@ class ApiKeyService:
         Endpoint:
             ``DELETE /v1/auth/api-keys/<api_key_id>`` - requires JWT.
         """
-        return self.client._make_request("DELETE", f"/auth/api-keys/{api_key_id}", headers=headers)
+        response = self.client._make_request("DELETE", f"/auth/api-keys/{api_key_id}", headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def validate_credentials(self, headers: Dict[str, str]) -> Dict[str, Any]:
         """
@@ -337,7 +346,8 @@ class UserService:
         Endpoint:
             ``PUT /v1/user/profile`` - requires write scope or JWT.
         """
-        return self.client._make_request("PUT", "/user/profile", data=payload, headers=headers)
+        response = self.client._make_request("PUT", "/user/profile", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def get_user(self, user_id: str, headers: Dict[str, str]) -> Dict[str, Any]:
         """

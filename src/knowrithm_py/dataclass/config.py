@@ -14,6 +14,8 @@ class KnowrithmConfig:
         stream_path_template: Optional[str] = "/conversation/{conversation_id}/messages/stream",
         stream_base_url: Optional[str] = None,
         stream_timeout: Optional[float] = None,
+        task_poll_interval: float = 1.5,
+        task_poll_timeout: float = 180,
     ):
         self.base_url = base_url
         self.api_version = api_version
@@ -24,3 +26,5 @@ class KnowrithmConfig:
         self.stream_path_template = stream_path_template
         self.stream_base_url = stream_base_url
         self.stream_timeout = stream_timeout
+        self.task_poll_interval = task_poll_interval
+        self.task_poll_timeout = task_poll_timeout

@@ -38,13 +38,14 @@ class CompanyService:
             handle = Path(logo_path).expanduser().open("rb")
             files = {"logo": (Path(logo_path).name, handle)}
         try:
-            return self.client._make_request(
+            response = self.client._make_request(
                 "POST",
                 "/company",
                 data=payload,
                 files=files,
                 headers=headers,
             )
+            return self.client._resolve_async_response(response, headers=headers)
         finally:
             if handle:
                 handle.close()
@@ -140,13 +141,14 @@ class CompanyService:
             handle = Path(logo_path).expanduser().open("rb")
             files = {"logo": (Path(logo_path).name, handle)}
         try:
-            return self.client._make_request(
+            response = self.client._make_request(
                 "PUT",
                 f"/company/{company_id}",
                 data=payload,
                 files=files,
                 headers=headers,
             )
+            return self.client._resolve_async_response(response, headers=headers)
         finally:
             if handle:
                 handle.close()
@@ -164,7 +166,8 @@ class CompanyService:
         Endpoint:
             ``PATCH /v1/company/<company_id>`` - super-admin only according to spec.
         """
-        return self.client._make_request("PATCH", f"/company/{company_id}", data=payload, headers=headers)
+        response = self.client._make_request("PATCH", f"/company/{company_id}", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     # ------------------------------------------------------------------ #
     # Deletion / restoration
@@ -176,7 +179,8 @@ class CompanyService:
         Endpoint:
             ``DELETE /v1/company/<company_id>`` - requires write scope or JWT.
         """
-        return self.client._make_request("DELETE", f"/company/{company_id}", headers=headers)
+        response = self.client._make_request("DELETE", f"/company/{company_id}", headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def restore_company(self, company_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -185,7 +189,8 @@ class CompanyService:
         Endpoint:
             ``PATCH /v1/company/<company_id>/restore`` - same authentication as delete.
         """
-        return self.client._make_request("PATCH", f"/company/{company_id}/restore", headers=headers)
+        response = self.client._make_request("PATCH", f"/company/{company_id}/restore", headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def cascade_delete_company(
         self,
@@ -203,12 +208,13 @@ class CompanyService:
         payload: Dict[str, Any] = {}
         if delete_related is not None:
             payload["delete_related"] = delete_related
-        return self.client._make_request(
+        response = self.client._make_request(
             "DELETE",
             f"/company/{company_id}/cascade-delete",
             data=payload or None,
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def get_related_data_summary(
         self,
@@ -236,12 +242,13 @@ class CompanyService:
             ``DELETE /v1/company/bulk-delete`` - requires write scope.
         """
         payload = {"company_ids": list(company_ids)}
-        return self.client._make_request(
+        response = self.client._make_request(
             "DELETE",
             "/company/bulk-delete",
             data=payload,
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def bulk_restore_companies(
         self,
@@ -256,9 +263,10 @@ class CompanyService:
             ``PATCH /v1/company/bulk-restore`` - requires write scope.
         """
         payload = {"company_ids": list(company_ids)}
-        return self.client._make_request(
+        response = self.client._make_request(
             "PATCH",
             "/company/bulk-restore",
             data=payload,
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)

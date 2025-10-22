@@ -42,7 +42,9 @@ client = KnowrithmClient(
     api_secret="your-api-secret"
 )
 
-# Create an agent (settings created automatically – provider/model names work too)
+# Create an agent (settings created automatically – provider/model names work too).
+# This call returns the fully provisioned agent because the SDK waits for the
+# asynchronous task to complete behind the scenes.
 agent = client.agents.create_agent(
     {
         "name": "Support Bot",
@@ -78,23 +80,53 @@ website_source = client.websites.register_source(
     }
 )
 
-# Start a conversation and send a message
+# Start a conversation and send a message. Non-streaming calls wait for the
+# underlying Celery task to complete and therefore return the final payload.
 conversation = client.conversations.create_conversation(agent_id=agent['agent']["id"])
-queued = client.messages.send_message(
+message_response = client.messages.send_message(
     conversation_id=conversation['conversation']["id"],
     message="Hello there!",
 )
 
-print(queued["status"])           # -> "queued"
-print(queued["poll_url"])         # -> "/v1/conversation/<id>/messages"
+# The returned structure mirrors POST /conversation/<id>/chat once processing finishes.
+print(message_response)
 
-# Poll the conversation for new messages once the task completes
+# You can still list the conversation to inspect the full transcript.
 messages = client.conversations.list_conversation_messages(
     conversation_id=conversation['conversation']["id"]
 )
 for entry in messages.get("messages", []):
     print(f"{entry['role']}: {entry['content']}")
 ```
+
+### Automatic task polling
+
+Many Knowrithm endpoints now execute work asynchronously via Celery. The SDK
+automatically follows any `status_url` (or synthesized `/tasks/<id>/status`
+route) until the task reports success or failure, returning the final payload to
+your code. This behaviour applies to every `create_*`, `update_*`, and
+`delete_*` helper as well as actions such as document uploads, crawls, and
+agent provisioning.
+
+You can adjust the polling cadence by supplying a custom `KnowrithmConfig`:
+
+```python
+from knowrithm_py.dataclass.config import KnowrithmConfig
+
+client = KnowrithmClient(
+    api_key="your-api-key",
+    api_secret="your-api-secret",
+    config=KnowrithmConfig(
+        base_url="https://app.knowrithm.org/api",
+        task_poll_interval=2.0,   # seconds between polls
+        task_poll_timeout=300,    # total wait time in seconds
+    ),
+)
+```
+
+When you opt into streaming (`stream=True`) the SDK returns immediately with a
+`MessageStream`; in that mode polling is skipped so real-time updates can flow
+without delay.
 
 ### Streaming responses (optional)
 

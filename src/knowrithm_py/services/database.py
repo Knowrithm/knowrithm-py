@@ -61,7 +61,8 @@ class DatabaseService:
         }
         if connection_params is not None:
             payload["connection_params"] = connection_params
-        return self.client._make_request("POST", "/database-connection", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/database-connection", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def list_connections(
         self,
@@ -141,12 +142,13 @@ class DatabaseService:
             payload["connection_params"] = connection_params
         if agent_id is not None:
             payload["agent_id"] = agent_id
-        return self.client._make_request(
+        response = self.client._make_request(
             "PUT",
             f"/database-connection/{connection_id}",
             data=payload,
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def patch_connection(
         self,
@@ -169,12 +171,13 @@ class DatabaseService:
         Returns:
             Updated connection payload.
         """
-        return self.client._make_request(
+        response = self.client._make_request(
             "PATCH",
             f"/database-connection/{connection_id}",
             data=updates,
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def delete_connection(self, connection_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -190,7 +193,8 @@ class DatabaseService:
         Returns:
             Confirmation payload including deletion metadata.
         """
-        return self.client._make_request("DELETE", f"/database-connection/{connection_id}", headers=headers)
+        response = self.client._make_request("DELETE", f"/database-connection/{connection_id}", headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def restore_connection(self, connection_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -206,11 +210,12 @@ class DatabaseService:
         Returns:
             Restored connection payload.
         """
-        return self.client._make_request(
+        response = self.client._make_request(
             "PATCH",
             f"/database-connection/{connection_id}/restore",
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def list_deleted_connections(self, headers: Optional[Dict[str, str]] = None) -> List[Dict[str, Any]]:
         """
@@ -244,11 +249,12 @@ class DatabaseService:
         Returns:
             JSON payload with connectivity test results.
         """
-        return self.client._make_request(
+        response = self.client._make_request(
             "POST",
             f"/database-connection/{connection_id}/test",
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def analyze_connection(self, connection_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -264,11 +270,12 @@ class DatabaseService:
         Returns:
             Task or status payload indicating analysis progress.
         """
-        return self.client._make_request(
+        response = self.client._make_request(
             "POST",
             f"/database-connection/{connection_id}/analyze",
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def analyze_multiple_connections(
         self,
@@ -290,12 +297,13 @@ class DatabaseService:
         Returns:
             Analysis dispatch response.
         """
-        return self.client._make_request(
+        response = self.client._make_request(
             "POST",
             "/database-connection/analyze",
             data=payload,
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     # ------------------------------------------------------------------ #
     # Table metadata
@@ -359,11 +367,12 @@ class DatabaseService:
         Returns:
             Confirmation payload.
         """
-        return self.client._make_request(
+        response = self.client._make_request(
             "DELETE",
             f"/database-connection/table/{table_id}",
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def delete_tables_for_connection(
         self,
@@ -383,11 +392,12 @@ class DatabaseService:
         Returns:
             Confirmation payload.
         """
-        return self.client._make_request(
+        response = self.client._make_request(
             "DELETE",
             f"/database-connection/{connection_id}/table",
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def restore_table(self, table_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -403,11 +413,12 @@ class DatabaseService:
         Returns:
             Restored table payload.
         """
-        return self.client._make_request(
+        response = self.client._make_request(
             "PATCH",
             f"/database-connection/table/{table_id}/restore",
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def list_deleted_tables(self, headers: Optional[Dict[str, str]] = None) -> List[Dict[str, Any]]:
         """
@@ -501,12 +512,13 @@ class DatabaseService:
             payload["execute"] = execute
         if result_limit is not None:
             payload["result_limit"] = result_limit
-        return self.client._make_request(
+        response = self.client._make_request(
             "POST",
             f"/database-connection/{connection_id}/text-to-sql",
             data=payload,
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def export_connection(
         self,
@@ -531,11 +543,12 @@ class DatabaseService:
             Export job metadata.
         """
         payload = {"connection_id": connection_id}
-        return self.client._make_request(
+        response = self.client._make_request(
             "POST",
             "/database-connection/export",
             data=payload,
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
         

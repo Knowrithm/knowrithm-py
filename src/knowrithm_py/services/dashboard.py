@@ -190,7 +190,8 @@ class AnalyticsService:
         Endpoint:
             ``POST /v1/system-metric`` - requires write scope.
         """
-        return self.client._make_request("POST", "/system-metric", headers=headers)
+        response = self.client._make_request("POST", "/system-metric", headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def export_analytics(
         self,

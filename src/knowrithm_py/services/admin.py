@@ -206,7 +206,8 @@ class AdminService:
             payload["description"] = description
         if is_sensitive is not None:
             payload["is_sensitive"] = is_sensitive
-        return self.client._make_request("PATCH", "/config", data=payload, headers=headers)
+        response = self.client._make_request("PATCH", "/config", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def force_password_reset(self, user_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -215,11 +216,12 @@ class AdminService:
         Endpoint:
             ``POST /v1/user/<user_id>/force-password-reset`` - requires admin scope.
         """
-        return self.client._make_request(
+        response = self.client._make_request(
             "POST",
             f"/user/{user_id}/force-password-reset",
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def impersonate_user(self, user_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -228,7 +230,8 @@ class AdminService:
         Endpoint:
             ``POST /v1/user/<user_id>/impersonate`` - super-admin only.
         """
-        return self.client._make_request("POST", f"/user/{user_id}/impersonate", headers=headers)
+        response = self.client._make_request("POST", f"/user/{user_id}/impersonate", headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def update_user_status(
         self,
@@ -249,7 +252,8 @@ class AdminService:
         payload: Dict[str, Any] = {"status": status}
         if reason is not None:
             payload["reason"] = reason
-        return self.client._make_request("PATCH", f"/user/{user_id}/status", data=payload, headers=headers)
+        response = self.client._make_request("PATCH", f"/user/{user_id}/status", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def update_user_role(
         self,
@@ -265,6 +269,7 @@ class AdminService:
             ``PATCH /v1/user/<user_id>/role`` - requires super-admin privileges.
         """
         payload = {"role": role}
-        return self.client._make_request("PATCH", f"/user/{user_id}/role", data=payload, headers=headers)
+        response = self.client._make_request("PATCH", f"/user/{user_id}/role", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
 

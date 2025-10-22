@@ -3,8 +3,10 @@
 
 
 import time
-import requests
+import urllib.parse
 from typing import Any, Dict, Optional
+
+import requests
 from knowrithm_py.config.config import Config
 from knowrithm_py.dataclass.config import KnowrithmConfig
 from knowrithm_py.dataclass.error import KnowrithmAPIError
@@ -158,3 +160,141 @@ class KnowrithmClient:
                 time.sleep(self.config.retry_backoff_factor ** attempt)
         
         raise KnowrithmAPIError("Max retries exceeded")
+
+    def _resolve_async_response(
+        self,
+        response: Any,
+        *,
+        headers: Optional[Dict[str, str]] = None,
+    ) -> Any:
+        """
+        Resolve asynchronous task responses into their final payloads.
+
+        Many POST/PUT/PATCH/DELETE endpoints now queue Celery tasks and return an
+        acknowledgement payload shaped like::
+
+            {
+                "message": "...",
+                "status": "accepted",
+                "task_id": "...",
+                "status_url": "/api/v1/tasks/<task_id>/status"
+            }
+
+        This helper polls ``status_url`` until the task completes (or fails) so
+        that calling code continues to behave as it did when the APIs were
+        synchronous.
+        """
+        if not isinstance(response, dict):
+            return response
+
+        status = str(response.get("status", "")).lower()
+        status_url = response.get("status_url") or response.get("poll_url")
+        if not status_url:
+            task_id = response.get("task_id")
+            if task_id:
+                status_url = f"/{self.config.api_version}/tasks/{task_id}/status"
+
+        if status_url and status in {"accepted", "queued", "pending"}:
+            return self._poll_task_status(status_url, headers=headers)
+
+        return response
+
+    def _poll_task_status(
+        self,
+        status_url: str,
+        *,
+        headers: Optional[Dict[str, str]] = None,
+    ) -> Any:
+        """
+        Poll a Celery task status endpoint until completion or failure.
+        """
+        poll_interval = getattr(self.config, "task_poll_interval", 1.5)
+        timeout_seconds = getattr(self.config, "task_poll_timeout", 180)
+        deadline = time.monotonic() + timeout_seconds
+
+        poll_headers: Optional[Dict[str, str]] = None
+        if headers:
+            poll_headers = dict(headers)
+            poll_headers.pop("Content-Type", None)
+
+        while True:
+            endpoint = self._normalize_status_endpoint(status_url)
+            task_response = self._make_request("GET", endpoint, headers=poll_headers)
+
+            if not isinstance(task_response, dict):
+                return task_response
+
+            task_status = str(task_response.get("status", "")).lower()
+
+            if task_status in {"completed", "success", "succeeded", "finished", "done"}:
+                if "result" in task_response and task_response["result"] is not None:
+                    return task_response["result"]
+                if "data" in task_response and task_response["data"] is not None:
+                    return task_response["data"]
+                # Some task endpoints return the payload in ``response`` or reuse
+                # the full dictionary.
+                if "response" in task_response and task_response["response"] is not None:
+                    return task_response["response"]
+                return task_response
+
+            if task_status in {"failed", "error", "rejected"}:
+                error_payload = task_response.get("error")
+                message = None
+                error_code = None
+                if isinstance(error_payload, dict):
+                    message = error_payload.get("message")
+                    error_code = error_payload.get("code")
+                elif isinstance(error_payload, str):
+                    message = error_payload
+                raise KnowrithmAPIError(
+                    message or "Asynchronous task failed.",
+                    response_data=task_response,
+                    error_code=error_code,
+                )
+
+            # If the task is still running, ensure we have not exceeded the timeout.
+            if time.monotonic() >= deadline:
+                raise KnowrithmAPIError(
+                    "Timed out while waiting for asynchronous task to complete.",
+                    response_data=task_response,
+                )
+
+            # Default to polling even when the status field is absent — older
+            # implementations may omit it while the task is in-flight.
+            time.sleep(poll_interval)
+
+    def _normalize_status_endpoint(self, status_url: str) -> str:
+        """
+        Convert a status URL (absolute or relative) into a client-relative endpoint.
+        """
+        if not status_url:
+            raise ValueError("status_url is required to poll task status.")
+
+        parsed = urllib.parse.urlsplit(status_url)
+        path = parsed.path or status_url
+
+        # Remove any leading base URL components.
+        for prefix in (
+            self.base_url,
+            self.config.base_url,
+            f"{self.config.base_url.rstrip('/')}/{self.config.api_version}",
+        ):
+            if prefix and path.startswith(prefix):
+                path = path[len(prefix):]
+
+        if path.startswith("/"):
+            cleaned = path
+        else:
+            cleaned = f"/{path}"
+
+        api_prefix = f"/api/{self.config.api_version}"
+        version_prefix = f"/{self.config.api_version}"
+
+        if cleaned.startswith(api_prefix):
+            cleaned = cleaned[len(f"/api"):]
+        if cleaned.startswith(version_prefix):
+            cleaned = cleaned[len(version_prefix):]
+            if not cleaned.startswith("/"):
+                cleaned = f"/{cleaned}"
+
+        return cleaned or "/"

@@ -72,7 +72,8 @@ class SettingsService:
             payload["widget_config"] = widget_config
         if is_default is not None:
             payload["is_default"] = is_default
-        return self.client._make_request("POST", "/settings", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/settings", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def create_settings_with_provider_names(
         self,
@@ -147,7 +148,8 @@ class SettingsService:
         if is_default is not None:
             payload["is_default"] = is_default
 
-        return self.client._make_request("POST", "/sdk/settings", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/sdk/settings", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def update_settings(
         self,
@@ -213,12 +215,13 @@ class SettingsService:
             payload["widget_config"] = widget_config
         if is_default is not None:
             payload["is_default"] = is_default
-        return self.client._make_request(
+        response = self.client._make_request(
             "PUT",
             f"/settings/{settings_id}",
             data=payload,
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def get_settings(self, settings_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -277,7 +280,8 @@ class SettingsService:
         Endpoint:
             ``DELETE /v1/settings/<settings_id>`` - requires write scope.
         """
-        return self.client._make_request("DELETE", f"/settings/{settings_id}", headers=headers)
+        response = self.client._make_request("DELETE", f"/settings/{settings_id}", headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def test_settings(
         self,
@@ -293,12 +297,13 @@ class SettingsService:
         Endpoint:
             ``POST /v1/settings/test/<settings_id>`` - requires write scope.
         """
-        return self.client._make_request(
+        response = self.client._make_request(
             "POST",
             f"/settings/test/{settings_id}",
             data=overrides,
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def list_settings_providers(
         self,
@@ -325,12 +330,13 @@ class SettingsService:
         Endpoint:
             ``POST /v1/settings/providers/seed`` - requires write scope.
         """
-        return self.client._make_request(
+        response = self.client._make_request(
             "POST",
             "/settings/providers/seed",
             data=overrides,
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
 
 class ProviderService:
@@ -368,7 +374,8 @@ class ProviderService:
             payload["pricing"] = pricing
         if status is not None:
             payload["status"] = status
-        return self.client._make_request("POST", "/providers", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/providers", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def update_provider(
         self,
@@ -401,12 +408,13 @@ class ProviderService:
             payload["pricing"] = pricing
         if status is not None:
             payload["status"] = status
-        return self.client._make_request(
+        response = self.client._make_request(
             "PUT",
             f"/providers/{provider_id}",
             data=payload,
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def delete_provider(self, provider_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -415,7 +423,8 @@ class ProviderService:
         Endpoint:
             ``DELETE /v1/providers/<provider_id>`` - requires write scope.
         """
-        return self.client._make_request("DELETE", f"/providers/{provider_id}", headers=headers)
+        response = self.client._make_request("DELETE", f"/providers/{provider_id}", headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def list_providers(
         self,
@@ -452,7 +461,8 @@ class ProviderService:
         Endpoint:
             ``POST /v1/providers/bulk-import`` - requires write scope.
         """
-        return self.client._make_request("POST", "/providers/bulk-import", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/providers/bulk-import", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def create_model(
         self,
@@ -490,12 +500,13 @@ class ProviderService:
             payload["embedding_dimension"] = embedding_dimension
         if status is not None:
             payload["status"] = status
-        return self.client._make_request(
+        response = self.client._make_request(
             "POST",
             f"/providers/{provider_id}/models",
             data=payload,
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def update_model(
         self,
@@ -538,12 +549,13 @@ class ProviderService:
             payload["embedding_dimension"] = embedding_dimension
         if status is not None:
             payload["status"] = status
-        return self.client._make_request(
+        response = self.client._make_request(
             "PUT",
             f"/providers/{provider_id}/models/{model_id}",
             data=payload,
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def delete_model(
         self,
@@ -558,11 +570,12 @@ class ProviderService:
         Endpoint:
             ``DELETE /v1/providers/<provider_id>/models/<model_id>`` - requires write scope.
         """
-        return self.client._make_request(
+        response = self.client._make_request(
             "DELETE",
             f"/providers/{provider_id}/models/{model_id}",
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def list_models(
         self,

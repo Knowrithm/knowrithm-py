@@ -211,7 +211,8 @@ class ConversationService:
             payload["metadata"] = metadata
         if max_context_length is not None:
             payload["max_context_length"] = max_context_length
-        return self.client._make_request("POST", "/conversation", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/conversation", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def list_conversations(
         self,
@@ -362,7 +363,8 @@ class ConversationService:
         Endpoint:
             ``DELETE /v1/conversation/<conversation_id>`` - requires write scope.
         """
-        return self.client._make_request("DELETE", f"/conversation/{conversation_id}", headers=headers)
+        response = self.client._make_request("DELETE", f"/conversation/{conversation_id}", headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def delete_conversation_messages(
         self,
@@ -375,11 +377,12 @@ class ConversationService:
         Endpoint:
             ``DELETE /v1/conversation/<conversation_id>/messages`` - requires write scope.
         """
-        return self.client._make_request(
+        response = self.client._make_request(
             "DELETE",
             f"/conversation/{conversation_id}/messages",
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def restore_conversation(self, conversation_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -388,11 +391,12 @@ class ConversationService:
         Endpoint:
             ``PATCH /v1/conversation/<conversation_id>/restore`` - requires write scope.
         """
-        return self.client._make_request(
+        response = self.client._make_request(
             "PATCH",
             f"/conversation/{conversation_id}/restore",
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def restore_all_messages(
         self,
@@ -405,11 +409,12 @@ class ConversationService:
         Endpoint:
             ``PATCH /v1/conversation/<conversation_id>/message/restore-all`` - requires write scope.
         """
-        return self.client._make_request(
+        response = self.client._make_request(
             "PATCH",
             f"/conversation/{conversation_id}/message/restore-all",
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
 
 class MessageService:
@@ -463,7 +468,7 @@ class MessageService:
         )
 
         if not stream:
-            return response_payload
+            return self.client._resolve_async_response(response_payload, headers=headers)
 
         return self.stream_conversation_messages(
             conversation_id,
@@ -482,7 +487,8 @@ class MessageService:
         Endpoint:
             ``DELETE /v1/message/<message_id>`` - requires write scope.
         """
-        return self.client._make_request("DELETE", f"/message/{message_id}", headers=headers)
+        response = self.client._make_request("DELETE", f"/message/{message_id}", headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def restore_message(self, message_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -491,7 +497,8 @@ class MessageService:
         Endpoint:
             ``PATCH /v1/message/<message_id>/restore`` - requires write scope.
         """
-        return self.client._make_request("PATCH", f"/message/{message_id}/restore", headers=headers)
+        response = self.client._make_request("PATCH", f"/message/{message_id}/restore", headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def list_deleted_messages(self, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """

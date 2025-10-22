@@ -76,13 +76,14 @@ class DocumentService:
                     file_handles.append(handle)
                     files.append(("files", (file_path.name, handle)))
                 
-                return self.client._make_request(
+                response = self.client._make_request(
                     "POST",
                     "/document/upload",
                     data=data_payload,
                     files=files,
                     headers=headers,
                 )
+                return self.client._resolve_async_response(response, headers=headers)
             
             # When only URLs (no files), send as JSON payload
             else:
@@ -94,12 +95,13 @@ class DocumentService:
                 if url:
                     json_payload["url"] = url
                 
-                return self.client._make_request(
+                response = self.client._make_request(
                     "POST",
                     "/document/upload",
-                    json=json_payload,
+                    data=json_payload,
                     headers=headers,
                 )
+                return self.client._resolve_async_response(response, headers=headers)
         
         finally:
             # Always close file handles
@@ -166,7 +168,8 @@ class DocumentService:
         Endpoint:
             ``DELETE /v1/document/<document_id>`` - requires write scope.
         """
-        return self.client._make_request("DELETE", f"/document/{document_id}", headers=headers)
+        response = self.client._make_request("DELETE", f"/document/{document_id}", headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def restore_document(self, document_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -175,7 +178,8 @@ class DocumentService:
         Endpoint:
             ``PATCH /v1/document/<document_id>/restore`` - requires write scope.
         """
-        return self.client._make_request("PATCH", f"/document/{document_id}/restore", headers=headers)
+        response = self.client._make_request("PATCH", f"/document/{document_id}/restore", headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def delete_document_chunk(self, chunk_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -184,7 +188,8 @@ class DocumentService:
         Endpoint:
             ``DELETE /v1/document/chunk/<chunk_id>`` - requires write scope.
         """
-        return self.client._make_request("DELETE", f"/document/chunk/{chunk_id}", headers=headers)
+        response = self.client._make_request("DELETE", f"/document/chunk/{chunk_id}", headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def restore_document_chunk(self, chunk_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -193,7 +198,8 @@ class DocumentService:
         Endpoint:
             ``PATCH /v1/document/chunk/<chunk_id>/restore`` - requires write scope.
         """
-        return self.client._make_request("PATCH", f"/document/chunk/{chunk_id}/restore", headers=headers)
+        response = self.client._make_request("PATCH", f"/document/chunk/{chunk_id}/restore", headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def delete_document_chunks(
         self,
@@ -206,7 +212,8 @@ class DocumentService:
         Endpoint:
             ``DELETE /v1/document/<document_id>/chunk`` - requires write scope.
         """
-        return self.client._make_request("DELETE", f"/document/{document_id}/chunk", headers=headers)
+        response = self.client._make_request("DELETE", f"/document/{document_id}/chunk", headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def restore_all_document_chunks(
         self,
@@ -219,11 +226,12 @@ class DocumentService:
         Endpoint:
             ``PATCH /v1/document/<document_id>/chunk/restore-all`` - requires write scope.
         """
-        return self.client._make_request(
+        response = self.client._make_request(
             "PATCH",
             f"/document/{document_id}/chunk/restore-all",
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def bulk_delete_documents(
         self,
@@ -241,9 +249,10 @@ class DocumentService:
             ``{"document_ids": [...]}``
         """
         payload = {"document_ids": list(document_ids)}
-        return self.client._make_request(
+        response = self.client._make_request(
             "DELETE",
             "/document/bulk-delete",
             data=payload,
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)

@@ -30,7 +30,8 @@ class WebsiteService:
         Args:
             payload: Must contain ``agent_id`` and ``base_url`` plus optional crawl settings.
         """
-        return self.client._make_request("POST", "/website/source", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/website/source", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def list_sources(
         self,
@@ -94,12 +95,13 @@ class WebsiteService:
         payload: Dict[str, Any] = {}
         if max_pages is not None:
             payload["max_pages"] = max_pages
-        return self.client._make_request(
+        response = self.client._make_request(
             "POST",
             f"/website/source/{source_id}/crawl",
             data=payload or None,
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     # ------------------------------------------------------------------ #
     # Widget handshake
@@ -125,9 +127,10 @@ class WebsiteService:
             payload["title"] = title
         if trigger_crawl is not None:
             payload["trigger_crawl"] = trigger_crawl
-        return self.client._make_request(
+        response = self.client._make_request(
             "POST",
             "/website/handshake",
             data=payload,
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)

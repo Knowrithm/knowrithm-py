@@ -84,7 +84,8 @@ class AgentService:
                 f"be provisioned automatically: {', '.join(missing_fields)}."
             )
 
-        return self.client._make_request("POST", "/agent", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/agent", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def create_agent_with_provider_names(
         self,
@@ -159,7 +160,8 @@ class AgentService:
 
         request_payload["settings"] = settings_payload
 
-        return self.client._make_request("POST", "/sdk/agent", data=request_payload, headers=headers)
+        response = self.client._make_request("POST", "/sdk/agent", data=request_payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def get_agent(self, agent_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -248,7 +250,8 @@ class AgentService:
         Endpoint:
             ``PUT /v1/agent/<agent_id>`` - requires ``write`` scope or JWT.
         """
-        return self.client._make_request("PUT", f"/agent/{agent_id}", data=payload, headers=headers)
+        response = self.client._make_request("PUT", f"/agent/{agent_id}", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def delete_agent(self, agent_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -257,7 +260,8 @@ class AgentService:
         Endpoint:
             ``DELETE /v1/agent/<agent_id>`` - requires agent write permissions.
         """
-        return self.client._make_request("DELETE", f"/agent/{agent_id}", headers=headers)
+        response = self.client._make_request("DELETE", f"/agent/{agent_id}", headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def restore_agent(self, agent_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -266,7 +270,8 @@ class AgentService:
         Endpoint:
             ``PATCH /v1/agent/<agent_id>/restore`` - requires write scope.
         """
-        return self.client._make_request("PATCH", f"/agent/{agent_id}/restore", headers=headers)
+        response = self.client._make_request("PATCH", f"/agent/{agent_id}/restore", headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def get_embed_code(self, agent_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -296,12 +301,13 @@ class AgentService:
         payload: Optional[Dict[str, Any]] = None
         if query is not None:
             payload = {"query": query}
-        return self.client._make_request(
+        response = self.client._make_request(
             "POST",
             f"/agent/{agent_id}/test",
             data=payload,
             headers=headers,
         )
+        return self.client._resolve_async_response(response, headers=headers)
 
     def get_agent_stats(self, agent_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -334,7 +340,8 @@ class AgentService:
             payload["name"] = name
         if llm_settings_id is not None:
             payload["llm_settings_id"] = llm_settings_id
-        return self.client._make_request("POST", f"/agent/{agent_id}/clone", data=payload or None, headers=headers)
+        response = self.client._make_request("POST", f"/agent/{agent_id}/clone", data=payload or None, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def fetch_widget_script(self, headers: Optional[Dict[str, str]] = None) -> str:
         """
@@ -369,4 +376,5 @@ class AgentService:
             ``body`` containing an HTML snippet.
         """
         payload = {"body": body_html}
-        return self.client._make_request("POST", "/test", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/test", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)

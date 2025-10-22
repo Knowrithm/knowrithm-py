@@ -62,7 +62,8 @@ class AddressService:
         payload: Dict[str, Any] = {"name": name}
         if iso_code is not None:
             payload["iso_code"] = iso_code
-        return self.client._make_request("POST", "/country", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/country", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def list_countries(self, headers: Optional[Dict[str, str]] = None) -> List[Dict[str, Any]]:
         """
@@ -127,7 +128,8 @@ class AddressService:
             payload["name"] = name
         if iso_code is not None:
             payload["iso_code"] = iso_code
-        return self.client._make_request("PATCH", f"/country/{country_id}", data=payload, headers=headers)
+        response = self.client._make_request("PATCH", f"/country/{country_id}", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     # --------------------------------------------------------------------- #
     # State operations
@@ -157,7 +159,8 @@ class AddressService:
             API response describing the created state.
         """
         payload = {"name": name, "country_id": country_id}
-        return self.client._make_request("POST", "/state", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/state", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def list_states_by_country(
         self,
@@ -226,7 +229,8 @@ class AddressService:
             payload["name"] = name
         if country_id is not None:
             payload["country_id"] = country_id
-        return self.client._make_request("PATCH", f"/state/{state_id}", data=payload, headers=headers)
+        response = self.client._make_request("PATCH", f"/state/{state_id}", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     # --------------------------------------------------------------------- #
     # City operations
@@ -261,7 +265,8 @@ class AddressService:
         payload: Dict[str, Any] = {"name": name, "state_id": state_id}
         if postal_code_prefix is not None:
             payload["postal_code_prefix"] = postal_code_prefix
-        return self.client._make_request("POST", "/city", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/city", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def list_cities_by_state(
         self,
@@ -334,7 +339,8 @@ class AddressService:
             payload["state_id"] = state_id
         if postal_code_prefix is not None:
             payload["postal_code_prefix"] = postal_code_prefix
-        return self.client._make_request("PATCH", f"/city/{city_id}", data=payload, headers=headers)
+        response = self.client._make_request("PATCH", f"/city/{city_id}", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     # --------------------------------------------------------------------- #
     # Company address management
@@ -396,7 +402,8 @@ class AddressService:
             payload["postal_code"] = postal_code
         if is_primary is not None:
             payload["is_primary"] = is_primary
-        return self.client._make_request("POST", "/address", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/address", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def get_company_address(self, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """

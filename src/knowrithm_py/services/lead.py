@@ -26,7 +26,8 @@ class LeadService:
         Endpoint:
             ``POST /v1/lead/register`` - no authentication required.
         """
-        return self.client._make_request("POST", "/lead/register", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/lead/register", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def create_lead(
         self,
@@ -40,7 +41,8 @@ class LeadService:
         Endpoint:
             ``POST /v1/lead`` - requires write scope or JWT.
         """
-        return self.client._make_request("POST", "/lead", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/lead", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def get_lead(self, lead_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -90,7 +92,8 @@ class LeadService:
         Endpoint:
             ``PUT /v1/lead/<lead_id>`` - requires write scope or JWT.
         """
-        return self.client._make_request("PUT", f"/lead/{lead_id}", data=payload, headers=headers)
+        response = self.client._make_request("PUT", f"/lead/{lead_id}", data=payload, headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
 
     def delete_lead(self, lead_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
         """
@@ -99,4 +102,5 @@ class LeadService:
         Endpoint:
             ``DELETE /v1/lead/<lead_id>`` - requires write scope or JWT.
         """
-        return self.client._make_request("DELETE", f"/lead/{lead_id}", headers=headers)
+        response = self.client._make_request("DELETE", f"/lead/{lead_id}", headers=headers)
+        return self.client._resolve_async_response(response, headers=headers)
