@@ -4,6 +4,8 @@
 
 import time
 import urllib.parse
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from typing import Any, Dict, Optional
 
 import requests
@@ -95,13 +97,15 @@ class KnowrithmClient:
         return f"{self.config.base_url}/{self.config.api_version}"
     
     def _make_request(
-        self, 
-        method: str, 
-        endpoint: str, 
+        self,
+        method: str,
+        endpoint: str,
         data: Optional[Dict] = None,
         params: Optional[Dict] = None,
         files: Optional[Any] = None,
-        headers: Optional[Dict] = None
+        headers: Optional[Dict] = None,
+        *,
+        return_response: bool = False,
     ) -> Any:
         """Make HTTP request with error handling and retries"""
         url = f"{self.base_url}{endpoint}"
@@ -146,13 +150,17 @@ class KnowrithmClient:
                 
                 # Return empty dict for successful requests with no content
                 if not response.content:
-                    return {"success": True}
-                
-                try:
-                    return response.json()
-                except ValueError:
-                    # Non-JSON responses are returned as raw text or bytes
-                    return response.content if files else response.text
+                    payload: Any = {"success": True}
+                else:
+                    try:
+                        payload = response.json()
+                    except ValueError:
+                        # Non-JSON responses are returned as raw text or bytes
+                        payload = response.content if files else response.text
+
+                if return_response:
+                    return payload, response
+                return payload
                 
             except requests.exceptions.RequestException as e:
                 if attempt == self.config.max_retries - 1:
@@ -217,9 +225,17 @@ class KnowrithmClient:
             poll_headers = dict(headers)
             poll_headers.pop("Content-Type", None)
 
+        adaptive_interval = max(poll_interval, 0.1)
+        max_interval = max(poll_interval * 6, poll_interval + 10.0)
+
         while True:
             endpoint = self._normalize_status_endpoint(status_url)
-            task_response = self._make_request("GET", endpoint, headers=poll_headers)
+            task_response, http_response = self._make_request(
+                "GET",
+                endpoint,
+                headers=poll_headers,
+                return_response=True,
+            )
 
             if not isinstance(task_response, dict):
                 return task_response
@@ -253,7 +269,28 @@ class KnowrithmClient:
                 )
 
             # If the task is still running, ensure we have not exceeded the timeout.
-            if time.monotonic() >= deadline:
+            now = time.monotonic()
+            if now >= deadline:
+                raise KnowrithmAPIError(
+                    "Timed out while waiting for asynchronous task to complete.",
+                    response_data=task_response,
+                )
+
+            next_status_url = task_response.get("status_url") or task_response.get("poll_url")
+            if next_status_url:
+                status_url = str(next_status_url)
+
+            wait_seconds = self._determine_poll_delay(task_response, http_response)
+
+            if wait_seconds is None:
+                wait_seconds = adaptive_interval
+                adaptive_interval = min(max_interval, max(poll_interval, adaptive_interval * 1.5))
+            else:
+                adaptive_interval = max(poll_interval, 0.1)
+                wait_seconds = max(wait_seconds, 0.1)
+
+            time_remaining = deadline - now
+            if time_remaining <= 0:
                 raise KnowrithmAPIError(
                     "Timed out while waiting for asynchronous task to complete.",
                     response_data=task_response,
@@ -261,7 +298,7 @@ class KnowrithmClient:
 
             # Default to polling even when the status field is absent — older
             # implementations may omit it while the task is in-flight.
-            time.sleep(poll_interval)
+            time.sleep(min(wait_seconds, time_remaining))
 
     def _normalize_status_endpoint(self, status_url: str) -> str:
         """
@@ -298,3 +335,138 @@ class KnowrithmClient:
                 cleaned = f"/{cleaned}"
 
         return cleaned or "/"
+
+    def _determine_poll_delay(
+        self,
+        task_response: Dict[str, Any],
+        http_response: Optional[requests.Response],
+    ) -> Optional[float]:
+        """
+        Inspect server responses for an explicit polling cadence.
+        """
+        hints: list[float] = []
+
+        if http_response is not None:
+            header_hint = self._parse_retry_after_header(http_response.headers.get("Retry-After"))
+            if header_hint is not None:
+                hints.append(header_hint)
+
+        containers = [task_response]
+        for key in ("meta", "metadata", "details", "info"):
+            value = task_response.get(key)
+            if isinstance(value, dict):
+                containers.append(value)
+
+        duration_keys = (
+            "retry_after",
+            "retry_after_seconds",
+            "retry_after_ms",
+            "poll_after",
+            "poll_after_seconds",
+            "poll_after_ms",
+            "poll_in",
+            "poll_interval",
+            "refresh_in",
+            "wait_for",
+            "wait_for_seconds",
+            "next_poll_in",
+        )
+
+        datetime_keys = (
+            "retry_at",
+            "next_poll_at",
+            "eta",
+            "available_at",
+            "scheduled_for",
+        )
+
+        for container in containers:
+            for key in duration_keys:
+                seconds = self._coerce_duration_seconds(container.get(key) if isinstance(container, dict) else None, key)
+                if seconds is not None:
+                    hints.append(seconds)
+            for key in datetime_keys:
+                seconds = self._seconds_until(container.get(key) if isinstance(container, dict) else None)
+                if seconds is not None:
+                    hints.append(seconds)
+
+        if hints:
+            return max(0.0, max(hints))
+        return None
+
+    @staticmethod
+    def _parse_retry_after_header(value: Optional[str]) -> Optional[float]:
+        if value is None:
+            return None
+        text = value.strip()
+        if not text:
+            return None
+        try:
+            return max(0.0, float(text))
+        except ValueError:
+            moment = KnowrithmClient._parse_datetime_string(text)
+            if moment is None:
+                return None
+            now = datetime.now(tz=moment.tzinfo or timezone.utc)
+            return max(0.0, (moment - now).total_seconds())
+
+    @staticmethod
+    def _coerce_duration_seconds(value: Any, field_name: Optional[str] = None) -> Optional[float]:
+        if value is None:
+            return None
+        if isinstance(value, (int, float)):
+            seconds = float(value)
+        elif isinstance(value, str):
+            stripped = value.strip()
+            if not stripped:
+                return None
+            try:
+                seconds = float(stripped)
+            except ValueError:
+                return None
+        else:
+            return None
+
+        key_hint = (field_name or "").lower()
+        if "ms" in key_hint or "millis" in key_hint:
+            seconds /= 1000.0
+        return max(0.0, seconds)
+
+    @staticmethod
+    def _seconds_until(value: Any) -> Optional[float]:
+        if value is None:
+            return None
+        if isinstance(value, datetime):
+            target = value
+        elif isinstance(value, (int, float)):
+            target = datetime.fromtimestamp(float(value), tz=timezone.utc)
+        elif isinstance(value, str):
+            target = KnowrithmClient._parse_datetime_string(value)
+            if target is None:
+                return None
+        else:
+            return None
+
+        if target.tzinfo is None:
+            target = target.replace(tzinfo=timezone.utc)
+        now = datetime.now(tz=target.tzinfo or timezone.utc)
+        return max(0.0, (target - now).total_seconds())
+
+    @staticmethod
+    def _parse_datetime_string(value: Optional[str]) -> Optional[datetime]:
+        if value is None:
+            return None
+        text = value.strip()
+        if not text:
+            return None
+        try:
+            iso_candidate = text.replace("Z", "+00:00")
+            dt = datetime.fromisoformat(iso_candidate)
+        except ValueError:
+            try:
+                dt = parsedate_to_datetime(text)
+            except (TypeError, ValueError):
+                return None
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt
