@@ -16,6 +16,7 @@ class KnowrithmConfig:
         stream_timeout: Optional[float] = None,
         task_poll_interval: float = 1.5,
         task_poll_timeout: float = 180,
+        auto_resolve_async_tasks: bool = False,
     ):
         self.base_url = base_url
         self.api_version = api_version
@@ -28,3 +29,4 @@ class KnowrithmConfig:
         self.stream_timeout = stream_timeout
         self.task_poll_interval = task_poll_interval
         self.task_poll_timeout = task_poll_timeout
+        self.auto_resolve_async_tasks = auto_resolve_async_tasks

@@ -6,7 +6,7 @@ import time
 import urllib.parse
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 import requests
 from knowrithm_py.config.config import Config
@@ -174,6 +174,7 @@ class KnowrithmClient:
         response: Any,
         *,
         headers: Optional[Dict[str, str]] = None,
+        force_resolve: bool = False,
     ) -> Any:
         """
         Resolve asynchronous task responses into their final payloads.
@@ -192,7 +193,8 @@ class KnowrithmClient:
         that calling code continues to behave as it did when the APIs were
         synchronous.
         """
-        if not isinstance(response, dict):
+        should_resolve = force_resolve or getattr(self.config, "auto_resolve_async_tasks", False)
+        if not should_resolve or not isinstance(response, dict):
             return response
 
         status = str(response.get("status", "")).lower()
@@ -206,6 +208,30 @@ class KnowrithmClient:
             return self._poll_task_status(status_url, headers=headers)
 
         return response
+
+    def resolve_async_task(
+        self,
+        task: Union[str, Dict[str, Any]],
+        *,
+        headers: Optional[Dict[str, str]] = None,
+    ) -> Any:
+        """
+        Manually resolve an asynchronous task acknowledgement or status URL.
+
+        Args:
+            task: Either the response payload (containing ``status_url`` or ``task_id``)
+                returned by an API call, or a direct status URL string to poll.
+            headers: Optional headers to include with polling requests.
+
+        Returns:
+            The final task payload when the task completes, or the original response
+            when no polling is required.
+        """
+        if isinstance(task, str):
+            return self._poll_task_status(task, headers=headers)
+        if not isinstance(task, dict):
+            return task
+        return self._resolve_async_response(task, headers=headers, force_resolve=True)
 
     def _poll_task_status(
         self,
