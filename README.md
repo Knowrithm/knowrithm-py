@@ -294,8 +294,8 @@ returns the JSON payload (or raw text/bytes for non-JSON responses).
 - `get_agent_by_name(name, company_id=None, headers=None)` - `GET /v1/agent/by-name/<name>`.
 - `list_agents(company_id=None, status=None, search=None, page=None, per_page=None, headers=None)` -
   `GET /v1/agent`.
-- `update_agent(agent_id, payload, headers=None)` - `PUT /v1/agent/<id>`.
-- `delete_agent(agent_id, headers=None)` - `DELETE /v1/agent/<id>` (soft delete).
+- `update_agent(agent_id, payload, company_id=None, headers=None)` - `PUT /v1/sdk/agent/<id>`.
+- `delete_agent(agent_id, headers=None)` - `DELETE /v1/sdk/agent/<id>` (soft delete).
 - `restore_agent(agent_id, headers=None)` - `PATCH /v1/agent/<id>/restore`.
 - `get_embed_code(agent_id, headers=None)` - `GET /v1/agent/<id>/embed-code`.
 - `test_agent(agent_id, query=None, headers=None)` - `POST /v1/agent/<id>/test`.
@@ -354,13 +354,13 @@ returns the JSON payload (or raw text/bytes for non-JSON responses).
 
 ### DatabaseService (`client.databases`)
 
-- `create_connection(name, url, database_type, agent_id, connection_params=None, headers=None)` -
-  `POST /v1/database-connection`.
+- `create_connection(name, url, database_type, agent_id, connection_params=None, company_id=None, user_id=None, headers=None)` -
+  `POST /v1/sdk/database`.
 - `list_connections(params=None, headers=None)` - `GET /v1/database-connection`.
 - `get_connection(connection_id, headers=None)` - `GET /v1/database-connection/<id>`.
-- `update_connection(...)` - `PUT /v1/database-connection/<id>`.
+- `update_connection(connection_id, *, name=None, url=None, database_type=None, connection_params=None, agent_id=None, headers=None)` - `PUT /v1/sdk/database/<id>`.
 - `patch_connection(connection_id, updates, headers=None)` - `PATCH /v1/database-connection/<id>`.
-- `delete_connection(connection_id, headers=None)` - `DELETE /v1/database-connection/<id>`.
+- `delete_connection(connection_id, headers=None)` - `DELETE /v1/sdk/database/<id>`.
 - `restore_connection(connection_id, headers=None)` - `PATCH /v1/database-connection/<id>/restore`.
 - `list_deleted_connections(headers=None)` - `GET /v1/database-connection/deleted`.
 - `test_connection(connection_id, headers=None)` - `POST /v1/database-connection/<id>/test`.
@@ -435,7 +435,8 @@ returns the JSON payload (or raw text/bytes for non-JSON responses).
 - `register_source(payload, headers=None)` - `POST /v1/website/source`. Register a website for crawling.
 - `list_sources(agent_id=None, headers=None)` - `GET /v1/website/source`. Enumerate website sources, optionally filtered by agent.
 - `list_source_pages(source_id, headers=None)` - `GET /v1/website/source/<id>/pages`. Inspect crawled pages and metadata.
-- `trigger_crawl(source_id, max_pages=None, headers=None)` - `POST /v1/website/source/<id>/crawl`. Queue a fresh crawl job.
+- `delete_source(source_id, headers=None)` - `DELETE /v1/sdk/website/source/<id>`. Soft delete a website source.
+- `trigger_crawl(source_id, max_pages=None, headers=None)` - `POST /v1/sdk/website/source/<id>/crawl`. Trigger a crawl and return the result.
 - `handshake(agent_id, url, title=None, trigger_crawl=None, headers=None)` - `POST /v1/website/handshake`. Widget callback that reports page context and can request a crawl.
 
 ### LeadService (`client.leads`)
@@ -443,12 +444,12 @@ returns the JSON payload (or raw text/bytes for non-JSON responses).
 - `register_lead(payload, headers=None)` - `POST /v1/lead/register`. Public widget
   registration; payload includes agent ID, first/last name, email, phone, and
   optional consent flags.
-- `create_lead(payload, headers=None)` - `POST /v1/lead`. Admin-created leads.
+- `create_lead(payload, headers=None)` - `POST /v1/sdk/lead`. Admin-created leads.
 - `get_lead(lead_id, headers=None)` - `GET /v1/lead/<id>`.
 - `list_company_leads(page=None, per_page=None, status=None, search=None, headers=None)` -
   `GET /v1/lead/company`.
-- `update_lead(lead_id, payload, headers=None)` - `PUT /v1/lead/<id>`.
-- `delete_lead(lead_id, headers=None)` - `DELETE /v1/lead/<id>`.
+- `update_lead(lead_id, payload, headers=None)` - `PUT /v1/sdk/lead/<id>`.
+- `delete_lead(lead_id, headers=None)` - `DELETE /v1/sdk/lead/<id>`.
 
 ---
 

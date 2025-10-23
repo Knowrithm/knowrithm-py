@@ -39,9 +39,9 @@ class LeadService:
         Create a lead via authenticated API call.
 
         Endpoint:
-            ``POST /v1/lead`` - requires write scope or JWT.
+            ``POST /v1/sdk/lead`` - requires write scope or JWT.
         """
-        response = self.client._make_request("POST", "/lead", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/sdk/lead", data=payload, headers=headers)
         return self.client._resolve_async_response(response, headers=headers)
 
     def get_lead(self, lead_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
@@ -90,9 +90,9 @@ class LeadService:
         Update mutable lead attributes.
 
         Endpoint:
-            ``PUT /v1/lead/<lead_id>`` - requires write scope or JWT.
+            ``PUT /v1/sdk/lead/<lead_id>`` - requires write scope or JWT.
         """
-        response = self.client._make_request("PUT", f"/lead/{lead_id}", data=payload, headers=headers)
+        response = self.client._make_request("PUT", f"/sdk/lead/{lead_id}", data=payload, headers=headers)
         return self.client._resolve_async_response(response, headers=headers)
 
     def delete_lead(self, lead_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
@@ -100,7 +100,7 @@ class LeadService:
         Soft-delete a lead.
 
         Endpoint:
-            ``DELETE /v1/lead/<lead_id>`` - requires write scope or JWT.
+            ``DELETE /v1/sdk/lead/<lead_id>`` - requires write scope or JWT.
         """
-        response = self.client._make_request("DELETE", f"/lead/{lead_id}", headers=headers)
+        response = self.client._make_request("DELETE", f"/sdk/lead/{lead_id}", headers=headers)
         return self.client._resolve_async_response(response, headers=headers)

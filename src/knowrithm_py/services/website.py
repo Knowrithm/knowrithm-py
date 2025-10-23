@@ -76,6 +76,25 @@ class WebsiteService:
             headers=headers,
         )
 
+    def delete_source(
+        self,
+        source_id: str,
+        *,
+        headers: Optional[Dict[str, str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Delete a website source and associated crawl metadata synchronously.
+
+        Endpoint:
+            ``DELETE /v1/sdk/website/source/<source_id>`` - requires write scope or JWT.
+        """
+        response = self.client._make_request(
+            "DELETE",
+            f"/sdk/website/source/{source_id}",
+            headers=headers,
+        )
+        return self.client._resolve_async_response(response, headers=headers)
+
     def trigger_crawl(
         self,
         source_id: str,
@@ -84,10 +103,10 @@ class WebsiteService:
         headers: Optional[Dict[str, str]] = None,
     ) -> Dict[str, Any]:
         """
-        Queue a crawl job for the specified website source.
+        Trigger a crawl job for the specified website source and return the result.
 
         Endpoint:
-            ``POST /v1/website/source/<source_id>/crawl`` - requires write scope or JWT.
+            ``POST /v1/sdk/website/source/<source_id>/crawl`` - requires write scope or JWT.
 
         Args:
             max_pages: Optional override for the crawl limit.
@@ -97,7 +116,7 @@ class WebsiteService:
             payload["max_pages"] = max_pages
         response = self.client._make_request(
             "POST",
-            f"/website/source/{source_id}/crawl",
+            f"/sdk/website/source/{source_id}/crawl",
             data=payload or None,
             headers=headers,
         )

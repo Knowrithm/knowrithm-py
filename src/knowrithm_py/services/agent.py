@@ -88,7 +88,7 @@ class AgentService:
                 f"be provisioned automatically: {', '.join(missing_fields)}."
             )
 
-        response = self.client._make_request("POST", "/agent", data=payload, headers=headers)
+        response = self.client._make_request("POST", "/sdk/agent", data=payload, headers=headers)
         return self.client._resolve_async_response(response, headers=headers)
 
     def create_agent_with_provider_names(
@@ -249,15 +249,25 @@ class AgentService:
         agent_id: str,
         payload: Dict[str, Any],
         *,
+        company_id: Optional[str] = None,
         headers: Optional[Dict[str, str]] = None,
     ) -> Dict[str, Any]:
         """
         Replace an agent's metadata and associated LLM settings.
 
         Endpoint:
-            ``PUT /v1/agent/<agent_id>`` - requires ``write`` scope or JWT.
+            ``PUT /v1/sdk/agent/<agent_id>`` - requires ``write`` scope or JWT.
         """
-        response = self.client._make_request("PUT", f"/agent/{agent_id}", data=payload, headers=headers)
+        params: Dict[str, Any] = {}
+        if company_id is not None:
+            params["company_id"] = company_id
+        response = self.client._make_request(
+            "PUT",
+            f"/sdk/agent/{agent_id}",
+            data=payload,
+            params=params or None,
+            headers=headers,
+        )
         return self.client._resolve_async_response(response, headers=headers)
 
     def delete_agent(self, agent_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
@@ -265,9 +275,9 @@ class AgentService:
         Soft-delete an agent (must have no active conversations).
 
         Endpoint:
-            ``DELETE /v1/agent/<agent_id>`` - requires agent write permissions.
+            ``DELETE /v1/sdk/agent/<agent_id>`` - requires agent write permissions.
         """
-        response = self.client._make_request("DELETE", f"/agent/{agent_id}", headers=headers)
+        response = self.client._make_request("DELETE", f"/sdk/agent/{agent_id}", headers=headers)
         return self.client._resolve_async_response(response, headers=headers)
 
     def restore_agent(self, agent_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:

@@ -26,13 +26,15 @@ class DatabaseService:
         agent_id: str,
         *,
         connection_params: Optional[Dict[str, Any]] = None,
+        company_id: Optional[str] = None,
+        user_id: Optional[str] = None,
         headers: Optional[Dict[str, str]] = None,
     ) -> Dict[str, Any]:
         """
         Create and immediately test a database connection.
 
         Endpoint:
-            ``POST /v1/database-connection`` - requires API key scope ``write``
+            ``POST /v1/sdk/database`` - requires API key scope ``write``
             or a JWT with matching permissions.
 
         Payload:
@@ -41,6 +43,8 @@ class DatabaseService:
             - ``database_type`` (required, e.g. ``postgres`` or ``mysql``)
             - ``agent_id`` (required, UUID string)
             - ``connection_params`` (optional dict with provider-specific flags)
+            - ``company_id`` (optional, required for super admins acting on behalf of a company)
+            - ``user_id`` (optional override for the owning user)
 
         Args:
             name: Friendly connection name displayed in the dashboard.
@@ -48,6 +52,8 @@ class DatabaseService:
             database_type: Backend type identifier.
             agent_id: Agent UUID that owns this data source.
             connection_params: Extra driver configuration such as SSL details.
+            company_id: Company scope override (required when authenticated as a super admin).
+            user_id: Explicit user identifier to associate with the connection.
             headers: Optional header overrides (for JWT based auth flows).
 
         Returns:
@@ -61,7 +67,11 @@ class DatabaseService:
         }
         if connection_params is not None:
             payload["connection_params"] = connection_params
-        response = self.client._make_request("POST", "/database-connection", data=payload, headers=headers)
+        if company_id is not None:
+            payload["company_id"] = company_id
+        if user_id is not None:
+            payload["user_id"] = user_id
+        response = self.client._make_request("POST", "/sdk/database", data=payload, headers=headers)
         return self.client._resolve_async_response(response, headers=headers)
 
     def list_connections(
@@ -117,7 +127,7 @@ class DatabaseService:
         Replace all stored fields for a connection (PUT semantics).
 
         Endpoint:
-            ``PUT /v1/database-connection/<connection_id>`` - requires write scope.
+            ``PUT /v1/sdk/database/<connection_id>`` - requires write scope.
 
         Args:
             connection_id: UUID for the target connection.
@@ -144,7 +154,7 @@ class DatabaseService:
             payload["agent_id"] = agent_id
         response = self.client._make_request(
             "PUT",
-            f"/database-connection/{connection_id}",
+            f"/sdk/database/{connection_id}",
             data=payload,
             headers=headers,
         )
@@ -184,7 +194,7 @@ class DatabaseService:
         Soft-delete a connection and all derived metadata.
 
         Endpoint:
-            ``DELETE /v1/database-connection/<connection_id>`` - requires write scope.
+            ``DELETE /v1/sdk/database/<connection_id>`` - requires write scope.
 
         Args:
             connection_id: UUID for the target connection.
@@ -193,7 +203,7 @@ class DatabaseService:
         Returns:
             Confirmation payload including deletion metadata.
         """
-        response = self.client._make_request("DELETE", f"/database-connection/{connection_id}", headers=headers)
+        response = self.client._make_request("DELETE", f"/sdk/database/{connection_id}", headers=headers)
         return self.client._resolve_async_response(response, headers=headers)
 
     def restore_connection(self, connection_id: str, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
