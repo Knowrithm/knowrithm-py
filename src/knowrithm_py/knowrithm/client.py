@@ -141,8 +141,14 @@ class KnowrithmClient:
                     except ValueError:
                         error_data = {"detail": response.text}
                     
+                    message = (
+                        error_data.get("detail")
+                        or error_data.get("message")
+                        or error_data.get("error")
+                        or f"HTTP {response.status_code}"
+                    )
                     raise KnowrithmAPIError(
-                        message=error_data.get("detail", error_data.get("message", f"HTTP {response.status_code}")),
+                        message=message,
                         status_code=response.status_code,
                         response_data=error_data,
                         error_code=error_data.get("error_code")

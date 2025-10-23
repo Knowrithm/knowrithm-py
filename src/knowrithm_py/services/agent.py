@@ -38,7 +38,12 @@ class AgentService:
         Raises:
             ValueError: If required identifiers are missing.
         """
+        payload = dict(payload)
+
         if settings:
+            if settings.get("company_id") and not payload.get("company_id"):
+                payload["company_id"] = settings["company_id"]
+
             has_provider_names = all(
                 settings.get(field)
                 for field in ("llm_provider", "llm_model", "embedding_provider", "embedding_model")
@@ -65,7 +70,6 @@ class AgentService:
                 "widget_script_url",
                 "widget_config",
             }
-            payload = dict(payload)
             for key in allowed_setting_keys:
                 if key in settings and settings[key] is not None:
                     payload[key] = settings[key]
@@ -113,6 +117,9 @@ class AgentService:
         request_payload: Dict[str, Any] = {}
         if payload:
             request_payload.update(payload)
+
+        if settings and settings.get("company_id") and not request_payload.get("company_id"):
+            request_payload["company_id"] = settings["company_id"]
 
         settings_payload: Dict[str, Any] = {}
         if settings:
