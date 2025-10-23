@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: knowrithm-py
-Version: 0.1.19
+Version: 0.1.20
 Summary: Knowrithm Python SDK
 Author-email: Steven Saad <stevensaad35@gmail.com>
 Project-URL: Homepage, https://github.com/Knowrithm/knowrithm-py.git
@@ -115,12 +115,12 @@ for entry in messages.get("messages", []):
 
 Many Knowrithm endpoints execute work asynchronously via Celery and return an
 acknowledgement that includes a `status_url` (or synthesized `/tasks/<id>/status`
-route). Beginning with this release the SDK no longer polls that URL
-automatically; instead the acknowledgement payload is returned immediately so you
-can decide when (or whether) to wait for completion.
+route). The SDK automatically follows that URL until the task reports success or
+failure, then returns the final payload (for example the created agent record).
+Polling stops immediately once a terminal state is observed.
 
-If you want the previous behaviour you can opt in with
-`auto_resolve_async_tasks=True` on the config:
+If you prefer to handle task polling yourself you can opt out with
+`auto_resolve_async_tasks=False` on the config:
 
 ```python
 from knowrithm_py.dataclass.config import KnowrithmConfig
@@ -130,7 +130,7 @@ client = KnowrithmClient(
     api_secret="your-api-secret",
     config=KnowrithmConfig(
         base_url="https://app.knowrithm.org/api",
-        auto_resolve_async_tasks=True,
+        auto_resolve_async_tasks=False,
         task_poll_interval=2.0,   # seconds between polls
         task_poll_timeout=300,    # total wait time in seconds
     ),
